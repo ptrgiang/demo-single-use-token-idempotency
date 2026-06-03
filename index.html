@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Single-use Token Demo - Minh họa cơ chế mã dùng một lần</title>
+  <link rel="icon" type="image/png" href="https://thebuilder.work/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f4f0;
+      color: #111;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    header {
+      background: #FACC15;
+      border-bottom: 4px solid #111;
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    header .header-left {
+      flex: 1;
+    }
+    header h1 {
+      font-size: 22px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+    header .subtitle {
+      font-size: 13px;
+      color: #555;
+      margin-top: 4px;
+    }
+    header .logo-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    header .logo-link:hover {
+      opacity: 0.85;
+    }
+    header .logo-box {
+      width: 40px;
+      height: 40px;
+      background: #FFD23F;
+      border: 3px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 900;
+      font-size: 20px;
+      color: #000;
+    }
+    header .logo-text {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      color: #000;
+    }
+
+    .scenario-selector {
+      background: #fff;
+      border: 3px solid #111;
+      box-shadow: 6px 6px 0 #111;
+      margin: 24px 32px;
+      padding: 20px;
+    }
+    .scenario-selector h2 {
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .scenario-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .scenario-btn {
+      background: #fff;
+      border: 3px solid #111;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .scenario-btn:hover {
+      background: #FACC15;
+      transform: translate(-2px, -2px);
+      box-shadow: 4px 4px 0 #111;
+    }
+    .scenario-btn.active {
+      background: #111;
+      color: #FACC15;
+    }
+    .scenario-btn .num {
+      display: inline-block;
+      background: #FACC15;
+      color: #111;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      margin-right: 8px;
+    }
+    .scenario-btn.active .num {
+      background: #FACC15;
+      color: #111;
+    }
+
+    .split-view {
+      display: flex;
+      gap: 24px;
+      padding: 0 32px 32px;
+      height: calc(100vh - 300px);
+      min-height: 600px;
+    }
+
+    .panel {
+      flex: 1;
+      background: #fff;
+      border: 3px solid #111;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 6px 6px 0 #111;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-header {
+      background: #111;
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      border-bottom: 3px solid #111;
+    }
+    .panel-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* User Panel */
+    .order-card {
+      border: 3px solid #111;
+      padding: 20px;
+      background: #fafafa;
+      margin-bottom: 16px;
+    }
+    .order-card h3 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .order-info {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    .order-info div {
+      margin-bottom: 4px;
+    }
+    .order-info strong {
+      color: #111;
+    }
+
+    .download-btn {
+      background: #FACC15;
+      border: 3px solid #111;
+      padding: 14px 24px;
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+      box-shadow: 4px 4px 0 #111;
+    }
+    .download-btn:hover:not(:disabled) {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #111;
+    }
+    .download-btn:disabled {
+      background: #ddd;
+      color: #999;
+      cursor: not-allowed;
+    }
+    .download-btn.success {
+      background: #10b981;
+      color: #fff;
+    }
+    .download-btn.error {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .progress-bar {
+      margin-top: 12px;
+      height: 32px;
+      background: #e5e7eb;
+      border: 3px solid #111;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #FACC15;
+      width: 0%;
+      transition: width 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .status-message {
+      margin-top: 12px;
+      padding: 12px;
+      border: 3px solid #111;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-message.success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .status-message.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .status-message.info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .user-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+    }
+    .user-actions button {
+      flex: 1;
+      background: #fff;
+      border: 3px solid #111;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .user-actions button:hover {
+      background: #f0f0f0;
+    }
+
+    /* Backend Panel */
+    .db-table {
+      border: 3px solid #111;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 20px;
+    }
+    .db-table th {
+      background: #111;
+      color: #FACC15;
+      padding: 8px;
+      text-align: left;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+    .db-table td {
+      border: 2px solid #111;
+      padding: 8px;
+      background: #fff;
+    }
+    .db-table td.null {
+      color: #999;
+      font-style: italic;
+    }
+    .db-table tr.highlight {
+      animation: highlight 1s;
+    }
+    @keyframes highlight {
+      0%, 100% { background: transparent; }
+      50% { background: #fef3c7; }
+    }
+
+    .logs-timeline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .log-section {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .log-section h4 {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      background: #111;
+      color: #FACC15;
+      padding: 6px 10px;
+    }
+
+    #request-logs, #timeline {
+      flex: 1;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      min-height: 0;
+    }
+
+    .log-entry {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      border: 2px solid #111;
+      margin-bottom: 8px;
+      line-height: 1.6;
+      word-wrap: break-word;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+    .log-entry .timestamp {
+      color: #6b7280;
+    }
+    .log-entry .method {
+      color: #10b981;
+      font-weight: 700;
+    }
+    .log-entry .status-200 { color: #10b981; }
+    .log-entry .status-302 { color: #3b82f6; }
+    .log-entry .status-403 { color: #ef4444; }
+    .log-entry .sql {
+      color: #fbbf24;
+      margin-left: 16px;
+      display: block;
+    }
+    .log-entry .result {
+      color: #8b5cf6;
+      margin-left: 16px;
+      display: block;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 20px;
+      padding-bottom: 8px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 3px;
+      width: 8px;
+      height: 8px;
+      background: #d1d5db;
+      border: 3px solid #111;
+      border-radius: 50%;
+      box-sizing: content-box;
+    }
+    .timeline-item.active::before {
+      background: #FACC15;
+    }
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: -18px;
+      top: 17px;
+      width: 2px;
+      height: calc(100% + 3px);
+      background: #d1d5db;
+    }
+    .timeline-item:last-child::after {
+      display: none;
+    }
+    .timeline-item .title {
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .timeline-item .time {
+      font-size: 10px;
+      color: #999;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 4px;
+    }
+    .timeline-item .desc {
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* Mobile scenario selector toggle */
+    .scenario-toggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      background: #FACC15;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0 #000;
+      padding: 12px 20px;
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 900;
+      font-size: 14px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .scenario-toggle:hover {
+      background: #FFE066;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      header {
+        padding: 16px 20px;
+      }
+
+      header h1 {
+        font-size: 18px;
+      }
+
+      .split-view {
+        padding: 0 20px 20px;
+        height: calc(100vh - 280px);
+      }
+
+      .scenario-selector {
+        margin: 20px;
+        padding: 16px;
+      }
+
+      .scenario-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 12px 16px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      header .header-left {
+        order: 1;
+      }
+
+      header .logo-link {
+        order: 2;
+      }
+
+      header h1 {
+        font-size: 16px;
+      }
+
+      header .subtitle {
+        font-size: 11px;
+      }
+
+      header .logo-box {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+      }
+
+      header .logo-text {
+        font-size: 18px;
+      }
+
+      /* Side drawer for scenarios on mobile */
+      .scenario-selector {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 320px;
+        max-width: 85vw;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+        background: #fff;
+        border: none;
+        border-left: 3px solid #111;
+        box-shadow: -8px 0 16px rgba(0,0,0,0.2);
+        overflow-y: auto;
+        transition: right 0.3s ease;
+        z-index: 1000;
+      }
+
+      .scenario-selector.open {
+        right: 0;
+      }
+
+      .scenario-selector h2 {
+        margin-bottom: 16px;
+      }
+
+      .scenario-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .scenario-toggle {
+        display: block;
+      }
+
+      /* Stack panels vertically on mobile */
+      .split-view {
+        flex-direction: column;
+        padding: 0 16px 16px;
+        height: auto;
+        min-height: auto;
+      }
+
+      .panel {
+        height: 500px;
+      }
+
+      .logs-timeline-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #user-actions {
+        gap: 8px;
+      }
+
+      #user-actions button {
+        padding: 10px 14px;
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 14px;
+      }
+
+      header .logo-box {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+
+      header .logo-text {
+        font-size: 16px;
+      }
+
+      .scenario-btn {
+        padding: 10px 12px;
+        font-size: 11px;
+      }
+
+      .panel {
+        height: 400px;
+      }
+
+      .panel-body {
+        padding: 12px;
+      }
+
+      table {
+        font-size: 10px;
+      }
+
+      .order-card {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Single-use Token Demo
+    </h1>
+    <div class="subtitle">Minh họa cơ chế mã dùng một lần kết hợp idempotency</div>
+  </div>
+  <a href="https://thebuilder.work" target="_blank" rel="noopener" class="logo-link">
+    <div class="logo-box">B</div>
+    <span class="logo-text">The Builder</span>
+  </a>
+</header>
+
+<div class="scenario-selector">
+  <h2>Chọn kịch bản:</h2>
+  <div class="scenario-buttons">
+    <button class="scenario-btn active" data-scenario="1">
+      <span class="num">1</span>
+      Tải xuống lần đầu thành công
+    </button>
+    <button class="scenario-btn" data-scenario="2">
+      <span class="num">2</span>
+      Retry khi mạng lỗi
+    </button>
+    <button class="scenario-btn" data-scenario="3">
+      <span class="num">3</span>
+      Share token (bị chặn)
+    </button>
+    <button class="scenario-btn" data-scenario="4">
+      <span class="num">4</span>
+      Browser prefetch
+    </button>
+    <button class="scenario-btn" data-scenario="5">
+      <span class="num">5</span>
+      Race condition (2 requests)
+    </button>
+    <button class="scenario-btn" data-scenario="6">
+      <span class="num">6</span>
+      Hết 60s retry window
+    </button>
+  </div>
+</div>
+
+<div class="split-view">
+  <!-- Left Panel: User View -->
+  <div class="panel">
+    <div class="panel-header">👤 User View</div>
+    <div class="panel-body">
+      <div class="order-card">
+        <h3 id="order-title">Đơn hàng #...</h3>
+        <div class="order-info">
+          <div><strong>Sản phẩm:</strong> <span id="product-name">...</span></div>
+          <div><strong>Giá:</strong> <span id="product-price">...</span></div>
+          <div><strong>Trạng thái:</strong> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"/></svg> Đã thanh toán</div>
+          <div><strong>Download token:</strong> <code id="user-token" style="word-break: break-all; font-size: 10px;">...</code></div>
+        </div>
+
+        <div class="progress-bar" id="progress-bar" style="display: none;">
+          <div class="progress-fill" id="progress-fill">0%</div>
+        </div>
+
+        <div id="status-message"></div>
+      </div>
+
+      <div class="user-actions" id="user-actions" style="display: none;">
+        <!-- Actions will be populated by scenario -->
+      </div>
+
+      <div id="scenario-description" style="margin-top: 20px; padding: 16px; background: #fef3c7; border: 3px solid #111; font-size: 12px;">
+        <!-- Scenario description -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Backend View -->
+  <div class="panel">
+    <div class="panel-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 6px;">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"/>
+      </svg>
+      Backend / Admin View
+    </div>
+    <div class="panel-body">
+      <div class="log-section">
+        <h4>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Database State
+        </h4>
+        <table class="db-table">
+          <thead>
+            <tr>
+              <th>token</th>
+              <th>used_at</th>
+              <th>idempotency_key</th>
+              <th>expires_at</th>
+            </tr>
+          </thead>
+          <tbody id="db-table-body">
+            <!-- Will be populated by updateDatabase() -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="logs-timeline-grid">
+        <div class="log-section">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            Request Logs
+          </h4>
+          <div id="request-logs">
+            <div class="log-entry">
+              <span class="timestamp">[Chờ user action...]</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="log-section">
+          <h4>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Timeline
+          </h4>
+          <div class="timeline" id="timeline">
+            <!-- Will be populated by clearTimeline() -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Generate realistic sample data
+  function generateRandomHex(length) {
+    let result = '';
+    const chars = '0123456789abcdef';
+    for (let i = 0; i < length; i++) {
+      result += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return result;
+  }
+
+  const PRODUCTS = [
+    { name: 'Figma UI Kit - Dark Mode Dashboard', price: 299000 },
+    { name: 'React Component Library - E-commerce', price: 499000 },
+    { name: 'Landing Page Template - SaaS Startup', price: 199000 },
+    { name: 'Mobile App Wireframe Kit - iOS & Android', price: 399000 },
+    { name: 'Icon Pack - 500+ Business Icons', price: 149000 },
+    { name: 'Notion Template - Project Management', price: 99000 }
+  ];
+
+  const randomProduct = PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)];
+  const ORDER_ID = Math.floor(10000 + Math.random() * 90000); // 5 digits
+  const TOKEN = generateRandomHex(32); // 32 hex chars like real token
+
+  let currentScenario = '1';
+  let idemKey = null;
+  let usedAt = null;
+  let savedIdemKey = null;
+
+  // Scenario configurations
+  const scenarios = {
+    '1': {
+      title: 'Tải xuống lần đầu thành công',
+      description: 'User click "Tải xuống" lần đầu tiên. Backend thực hiện atomic UPDATE để mark token là đã dùng, sau đó tạo Presigned URL và trả về HTTP 302.',
+      steps: [
+        {
+          action: 'click-download',
+          label: 'Tải xuống sản phẩm'
+        }
+      ]
+    },
+    '2': {
+      title: 'Retry khi mạng lỗi',
+      description: 'User tải xuống lần đầu thành công, nhưng mạng bị lỗi ở 50%. User thử lại với cùng idempotency key. Backend kiểm tra idempotency và cho phép retry.',
+      steps: [
+        {
+          action: 'click-download',
+          label: 'Tải xuống lần đầu'
+        },
+        {
+          action: 'simulate-network-error',
+          label: 'Simulate mạng lỗi ở 50%'
+        },
+        {
+          action: 'retry-same-key',
+          label: 'Thử lại (cùng idem key)'
+        }
+      ]
+    },
+    '3': {
+      title: 'Share token cho người khác',
+      description: 'User A đã tải xuống thành công. User A share link download token cho User B. User B click vào nhưng có idempotency key khác → Backend từ chối (HTTP 403).',
+      steps: [
+        {
+          action: 'click-download',
+          label: 'User A tải xuống'
+        },
+        {
+          action: 'share-to-user-b',
+          label: 'Share link cho User B'
+        },
+        {
+          action: 'user-b-click',
+          label: 'User B click (khác idem key)'
+        }
+      ]
+    },
+    '4': {
+      title: 'Browser prefetch',
+      description: 'User hover chuột lên nút "Tải xuống", browser tự động prefetch URL. Token được mark used_at. Sau đó user click thật → Backend nhận ra cùng idempotency key và cho phép.',
+      steps: [
+        {
+          action: 'browser-prefetch',
+          label: 'Hover chuột (prefetch)'
+        },
+        {
+          action: 'real-click',
+          label: 'Click thật'
+        }
+      ]
+    },
+    '5': {
+      title: 'Race condition - 2 requests đồng thời',
+      description: 'User mở 2 tab và click "Tải xuống" đồng thời. Atomic UPDATE đảm bảo chỉ request đầu tiên thành công (1 row affected), request thứ hai nhận 0 rows affected.',
+      steps: [
+        {
+          action: 'open-two-tabs',
+          label: 'Mở 2 tab'
+        },
+        {
+          action: 'click-both',
+          label: 'Click cả 2 đồng thời'
+        }
+      ]
+    },
+    '6': {
+      title: 'Hết 60 giây retry window',
+      description: 'User tải xuống lần đầu thành công. Sau 61 giây, user thử lại với cùng idempotency key. Backend kiểm tra `datetime(used_at, \'+60 seconds\') > now` → FALSE → Từ chối.',
+      steps: [
+        {
+          action: 'click-download',
+          label: 'Tải xuống lần đầu'
+        },
+        {
+          action: 'wait-61-seconds',
+          label: 'Chờ 61 giây (simulate)'
+        },
+        {
+          action: 'retry-after-60s',
+          label: 'Thử lại (quá 60s)'
+        }
+      ]
+    }
+  };
+
+  // Initialize
+  function init() {
+    // Populate order info with random data
+    document.getElementById('order-title').textContent = `Đơn hàng #${ORDER_ID}`;
+    document.getElementById('product-name').textContent = randomProduct.name;
+    document.getElementById('product-price').textContent = randomProduct.price.toLocaleString('vi-VN') + ' VNĐ';
+    document.getElementById('user-token').textContent = TOKEN;
+
+    updateDatabase(); // Populate initial database state
+    clearTimeline(); // Populate initial timeline
+    renderScenario('1');
+
+    // Scenario button listeners
+    document.querySelectorAll('.scenario-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentScenario = btn.dataset.scenario;
+        resetState();
+        renderScenario(currentScenario);
+      });
+    });
+  }
+
+  function resetState() {
+    idemKey = null;
+    usedAt = null;
+    savedIdemKey = null;
+    updateDatabase();
+    clearLogs();
+    clearTimeline();
+    hideProgress();
+    clearStatus();
+  }
+
+  function renderScenario(scenarioId) {
+    const scenario = scenarios[scenarioId];
+
+    // Update description
+    document.getElementById('scenario-description').innerHTML = `
+      <strong>${scenario.title}</strong><br>
+      ${scenario.description}
+    `;
+
+    // Render action buttons
+    const actionsDiv = document.getElementById('user-actions');
+    actionsDiv.innerHTML = '';
+    actionsDiv.style.display = 'flex';
+
+    scenario.steps.forEach((step, index) => {
+      const btn = document.createElement('button');
+      btn.textContent = step.label;
+      btn.dataset.action = step.action;
+      btn.disabled = index > 0; // Only first button enabled initially
+      btn.addEventListener('click', () => handleAction(step.action, scenarioId));
+      actionsDiv.appendChild(btn);
+    });
+  }
+
+  function handleAction(action, scenarioId) {
+    const scenario = scenarios[scenarioId];
+    const actionIndex = scenario.steps.findIndex(s => s.action === action);
+
+    switch(action) {
+      case 'click-download':
+        downloadFirstTime();
+        break;
+      case 'simulate-network-error':
+        simulateNetworkError();
+        break;
+      case 'retry-same-key':
+        retrySameKey();
+        break;
+      case 'share-to-user-b':
+        shareToUserB();
+        break;
+      case 'user-b-click':
+        userBClick();
+        break;
+      case 'browser-prefetch':
+        browserPrefetch();
+        break;
+      case 'real-click':
+        realClick();
+        break;
+      case 'open-two-tabs':
+        openTwoTabs();
+        break;
+      case 'click-both':
+        clickBoth();
+        break;
+      case 'wait-61-seconds':
+        wait61Seconds();
+        break;
+      case 'retry-after-60s':
+        retryAfter60s();
+        break;
+    }
+
+    // Enable next button
+    const buttons = document.querySelectorAll('#user-actions button');
+    if (actionIndex + 1 < buttons.length) {
+      buttons[actionIndex + 1].disabled = false;
+    }
+    buttons[actionIndex].disabled = true;
+  }
+
+  // Action handlers
+  function downloadFirstTime() {
+    idemKey = generateUUID();
+
+    addLog(`<span class="timestamp">[${getTime()}]</span> <span class="method">GET</span> /api/download/${TOKEN}?idem=${idemKey}`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">UPDATE downloads SET used_at = datetime('now'), idempotency_key = '${idemKey}'</span>
+<span class="sql">WHERE token = '${TOKEN}' AND used_at IS NULL</span>`);
+    }, 300);
+
+    setTimeout(() => {
+      addLog(`<span class="result">→ 1 row affected <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"/></svg></span>`);
+      usedAt = new Date();
+      savedIdemKey = idemKey;
+      updateDatabase();
+      highlightRow();
+    }, 600);
+
+    setTimeout(() => {
+      addLog(`<span class="timestamp">[${getTime()}]</span> Tạo Presigned URL (TTL 300s)`);
+      addLog(`<span class="timestamp">[${getTime()}]</span> <span class="status-302">HTTP 302</span> Redirect → https://r2.../product.zip?X-Amz-Signature=...`);
+      showProgress();
+      addTimelineItem('Token được mark used_at', 'Atomic UPDATE thành công, 1 row affected');
+      addTimelineItem('Presigned URL created', 'TTL 5 phút, redirect đến R2');
+      addTimelineItem('File downloading...', 'Browser tải trực tiếp từ R2');
+    }, 900);
+
+    setTimeout(() => {
+      completeProgress();
+      showStatus('success', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg> Tải xuống thành công!');
+      addTimelineItem('Download complete', 'File đã được tải về hoàn chỉnh');
+    }, 2500);
+  }
+
+  function simulateNetworkError() {
+    showProgress();
+    setTimeout(() => {
+      document.getElementById('progress-fill').style.width = '50%';
+      document.getElementById('progress-fill').textContent = '50%';
+    }, 200);
+
+    setTimeout(() => {
+      addLog(`<span class="timestamp">[${getTime()}]</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Network error at 50%`);
+      showStatus('error', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Mạng bị lỗi! Click "Thử lại" để tải tiếp.');
+      hideProgress();
+      addTimelineItem('Network error', 'Tải xuống bị gián đoạn ở 50%');
+    }, 1000);
+  }
+
+  function retrySameKey() {
+    addLog(`<span class="timestamp">[${getTime()}]</span> <span class="method">GET</span> /api/download/${TOKEN}?idem=${idemKey}`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> (Cùng idempotency key: ${idemKey})`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">UPDATE downloads SET used_at = ..., idempotency_key = '${idemKey}'</span>
+<span class="sql">WHERE token = '${TOKEN}' AND used_at IS NULL</span>`);
+    }, 300);
+
+    setTimeout(() => {
+      addLog(`<span class="result">→ 0 rows affected (token đã dùng)</span>`);
+    }, 600);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">SELECT * FROM downloads</span>
+<span class="sql">WHERE token = '${TOKEN}' AND idempotency_key = '${idemKey}'</span>
+<span class="sql">AND datetime(used_at, '+60 seconds') > datetime('now')</span>`);
+    }, 900);
+
+    setTimeout(() => {
+      addLog(`<span class="result">→ 1 row returned (retry hợp lệ) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"/></svg></span>`);
+      addLog(`<span class="timestamp">[${getTime()}]</span> <span class="status-302">HTTP 302</span> Tạo Presigned URL mới`);
+      showProgress();
+      addTimelineItem('Idempotency check passed', 'Cùng key, trong 60 giây → cho phép retry');
+      addTimelineItem('New Presigned URL', 'Tạo URL mới, TTL 5 phút');
+    }, 1200);
+
+    setTimeout(() => {
+      completeProgress();
+      showStatus('success', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg> Retry thành công! File tải về hoàn chỉnh.');
+      addTimelineItem('Download complete', 'Retry thành công');
+    }, 3000);
+  }
+
+  function shareToUserB() {
+    addLog(`<span class="timestamp">[${getTime()}]</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> User A share link cho User B`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> Link: https://thebuilder.work/api/download/${TOKEN}`);
+    addTimelineItem('Share link', 'User A gửi download token cho User B');
+  }
+
+  function userBClick() {
+    const userBIdemKey = generateUUID();
+    addLog(`<span class="timestamp">[${getTime()}]</span> <span class="method">GET</span> /api/download/${TOKEN}?idem=${userBIdemKey}`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> (User B có idem key khác: ${userBIdemKey})`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">UPDATE downloads SET used_at = ..., idempotency_key = '${userBIdemKey}'</span>
+<span class="sql">WHERE token = '${TOKEN}' AND used_at IS NULL</span>`);
+    }, 300);
+
+    setTimeout(() => {
+      addLog(`<span class="result">→ 0 rows affected (token đã dùng)</span>`);
+    }, 600);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">SELECT * FROM downloads</span>
+<span class="sql">WHERE token = '${TOKEN}' AND idempotency_key = '${userBIdemKey}'</span>`);
+    }, 900);
+
+    setTimeout(() => {
+      addLog(`<span class="result">→ 0 rows (key không khớp) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`);
+      addLog(`<span class="timestamp">[${getTime()}]</span> <span class="status-403">HTTP 403 Forbidden</span>`);
+      showStatus('error', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> Token đã được sử dụng bởi người khác!');
+      addTimelineItem('Different idempotency key', 'User B có key khác → từ chối');
+      addTimelineItem('HTTP 403 Forbidden', 'Chặn thành công');
+    }, 1200);
+  }
+
+  function browserPrefetch() {
+    idemKey = generateUUID();
+    addLog(`<span class="timestamp">[${getTime()}]</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg> User hover chuột → Browser prefetch`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> <span class="method">GET</span> /api/download/${TOKEN}?idem=${idemKey}`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">UPDATE downloads SET used_at = datetime('now'), idempotency_key = '${idemKey}'</span>`);
+      addLog(`<span class="result">→ 1 row affected</span>`);
+      usedAt = new Date();
+      savedIdemKey = idemKey;
+      updateDatabase();
+      highlightRow();
+      addTimelineItem('Prefetch triggered', 'Browser mark token used_at');
+    }, 500);
+  }
+
+  function realClick() {
+    addLog(`<span class="timestamp">[${getTime()}]</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> User click thật (cùng session → cùng idem key)`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> <span class="method">GET</span> /api/download/${TOKEN}?idem=${idemKey}`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">UPDATE ... WHERE used_at IS NULL</span>`);
+      addLog(`<span class="result">→ 0 rows affected</span>`);
+    }, 300);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">SELECT * WHERE idempotency_key = '${idemKey}'</span>`);
+      addLog(`<span class="result">→ 1 row (retry hợp lệ) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"/></svg></span>`);
+      addLog(`<span class="status-302">HTTP 302</span> Tạo Presigned URL`);
+      showProgress();
+      addTimelineItem('Real click recognized', 'Cùng idem key → cho phép');
+    }, 600);
+
+    setTimeout(() => {
+      completeProgress();
+      showStatus('success', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg> Click thật thành công! Prefetch không làm burn token.');
+      addTimelineItem('Download complete', 'Prefetch không ảnh hưởng');
+    }, 2000);
+  }
+
+  function openTwoTabs() {
+    addLog(`<span class="timestamp">[${getTime()}]</span> 📑 User mở 2 tab đơn hàng`);
+    addTimelineItem('Open 2 tabs', 'Chuẩn bị test race condition');
+  }
+
+  function clickBoth() {
+    const idemKeyA = generateUUID();
+    const idemKeyB = generateUUID();
+
+    addLog(`<span class="timestamp">[${getTime()}]</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FACC15" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> User click "Tải xuống" ở cả 2 tab đồng thời`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> Tab A: idem=${idemKeyA}`);
+    addLog(`<span class="timestamp">[${getTime()}]</span> Tab B: idem=${idemKeyB}`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">-- Tab A: UPDATE WHERE used_at IS NULL</span>`);
+      addLog(`<span class="sql">-- Tab B: UPDATE WHERE used_at IS NULL (đồng thời)</span>`);
+    }, 300);
+
+    setTimeout(() => {
+      addLog(`<span class="result">Tab A: 1 row affected <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><polyline points="20 6 9 17 4 12"/></svg> (thắng race)</span>`);
+      addLog(`<span class="result">Tab B: 0 rows affected <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> (thua race)</span>`);
+      usedAt = new Date();
+      savedIdemKey = idemKeyA;
+      idemKey = idemKeyA;
+      updateDatabase();
+      highlightRow();
+      addTimelineItem('Race condition', 'Tab A thắng, Tab B thua → atomic guarantee');
+    }, 600);
+
+    setTimeout(() => {
+      addLog(`<span class="timestamp">[${getTime()}]</span> Tab A: <span class="status-302">HTTP 302</span> → Download thành công`);
+      addLog(`<span class="timestamp">[${getTime()}]</span> Tab B: <span class="status-403">HTTP 403</span> → Từ chối`);
+      showStatus('success', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg> Tab A tải thành công. Tab B bị chặn. Atomic UPDATE hoạt động!');
+      addTimelineItem('Result', 'Chỉ 1 tab thành công, đảm bảo single-use');
+    }, 900);
+  }
+
+  function wait61Seconds() {
+    addLog(`<span class="timestamp">[${getTime()}]</span> ⏳ Simulate: chờ 61 giây...`);
+    setTimeout(() => {
+      usedAt = new Date(Date.now() - 61000); // 61 seconds ago
+      updateDatabase();
+      highlightRow();
+      addLog(`<span class="timestamp">[${getTime()}]</span> used_at hiện tại: ${usedAt.toISOString()} (61s trước)`);
+      addTimelineItem('61 seconds passed', 'Retry window đã hết');
+    }, 1000);
+  }
+
+  function retryAfter60s() {
+    addLog(`<span class="timestamp">[${getTime()}]</span> <span class="method">GET</span> /api/download/${TOKEN}?idem=${idemKey}`);
+
+    setTimeout(() => {
+      addLog(`<span class="sql">SELECT * FROM downloads</span>
+<span class="sql">WHERE token = '${TOKEN}' AND idempotency_key = '${idemKey}'</span>
+<span class="sql">AND datetime(used_at, '+60 seconds') > datetime('now')</span>`);
+    }, 300);
+
+    setTimeout(() => {
+      addLog(`<span class="result">→ 0 rows (quá 60 giây) <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>`);
+      addLog(`<span class="timestamp">[${getTime()}]</span> <span class="status-403">HTTP 403 Forbidden</span>`);
+      addLog(`<span class="timestamp">[${getTime()}]</span> Message: "Retry window expired"`);
+      showStatus('error', '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Retry window đã hết! Token không thể dùng lại.');
+      addTimelineItem('HTTP 403', 'Quá 60 giây → từ chối');
+    }, 600);
+  }
+
+  // Helper functions
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+
+  function getTime() {
+    return new Date().toTimeString().slice(0, 8);
+  }
+
+  function updateDatabase() {
+    const tbody = document.getElementById('db-table-body');
+
+    // Tính expires_at = 24 giờ từ bây giờ, theo timezone người dùng
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAtStr = expiresAt.toLocaleString('sv-SE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).replace(',', '');
+
+    // Format used_at theo timezone người dùng
+    const usedAtStr = usedAt
+      ? usedAt.toLocaleString('sv-SE', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }).replace(',', '')
+      : 'NULL';
+
+    tbody.innerHTML = `
+      <tr>
+        <td>${TOKEN.slice(0, 10)}...</td>
+        <td class="${usedAt ? '' : 'null'}">${usedAtStr}</td>
+        <td class="${savedIdemKey ? '' : 'null'}">${savedIdemKey ? savedIdemKey.slice(0, 20) + '...' : 'NULL'}</td>
+        <td>${expiresAtStr}</td>
+      </tr>
+    `;
+  }
+
+  function highlightRow() {
+    document.querySelector('#db-table-body tr').classList.add('highlight');
+    setTimeout(() => {
+      document.querySelector('#db-table-body tr').classList.remove('highlight');
+    }, 1000);
+  }
+
+  function addLog(html) {
+    const logsDiv = document.getElementById('request-logs');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = html;
+    logsDiv.appendChild(entry);
+    logsDiv.scrollTop = logsDiv.scrollHeight;
+  }
+
+  function clearLogs() {
+    document.getElementById('request-logs').innerHTML = '<div class="log-entry"><span class="timestamp">[Chờ user action...]</span></div>';
+  }
+
+  function addTimelineItem(title, desc) {
+    const timeline = document.getElementById('timeline');
+    const item = document.createElement('div');
+    item.className = 'timeline-item active';
+    const timestamp = new Date().toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    item.innerHTML = `
+      <div class="time">[${timestamp}]</div>
+      <div class="title">${title}</div>
+      <div class="desc">${desc}</div>
+    `;
+    timeline.appendChild(item);
+    timeline.scrollTop = timeline.scrollHeight;
+  }
+
+  function clearTimeline() {
+    const timestamp = new Date().toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    document.getElementById('timeline').innerHTML = `
+      <div class="timeline-item">
+        <div class="time">[${timestamp}]</div>
+        <div class="title">Chờ user click tải xuống</div>
+        <div class="desc">Token chưa được sử dụng</div>
+      </div>
+    `;
+  }
+
+  function showProgress() {
+    document.getElementById('progress-bar').style.display = 'block';
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-fill').textContent = '0%';
+  }
+
+  function hideProgress() {
+    document.getElementById('progress-bar').style.display = 'none';
+  }
+
+  function completeProgress() {
+    const fill = document.getElementById('progress-fill');
+    let width = 0;
+    const interval = setInterval(() => {
+      width += 10;
+      fill.style.width = width + '%';
+      fill.textContent = width + '%';
+      if (width >= 100) {
+        clearInterval(interval);
+        setTimeout(hideProgress, 500);
+      }
+    }, 100);
+  }
+
+  function showStatus(type, message) {
+    const statusDiv = document.getElementById('status-message');
+    statusDiv.className = `status-message ${type}`;
+    statusDiv.innerHTML = message;
+  }
+
+  function clearStatus() {
+    document.getElementById('status-message').innerHTML = '';
+    document.getElementById('status-message').className = '';
+  }
+
+  // Initialize on load
+  init();
+
+  // Mobile scenario drawer toggle
+  const scenarioToggle = document.createElement('button');
+  scenarioToggle.className = 'scenario-toggle';
+  scenarioToggle.textContent = 'Kịch bản';
+  scenarioToggle.onclick = function() {
+    const drawer = document.querySelector('.scenario-selector');
+    drawer.classList.toggle('open');
+  };
+  document.body.appendChild(scenarioToggle);
+
+  // Close drawer when clicking scenario button on mobile
+  document.querySelectorAll('.scenario-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (window.innerWidth <= 768) {
+        document.querySelector('.scenario-selector').classList.remove('open');
+      }
+    });
+  });
+
+  // Close drawer when clicking outside on mobile
+  document.addEventListener('click', function(e) {
+    if (window.innerWidth <= 768) {
+      const drawer = document.querySelector('.scenario-selector');
+      const toggle = document.querySelector('.scenario-toggle');
+      if (!drawer.contains(e.target) && !toggle.contains(e.target) && drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
