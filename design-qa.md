@@ -1,29 +1,36 @@
-# Mini website / terminal UI verification
+# Mini website: scroll remediation QA
 
-Source visual truth: https://thebuilder.work/ (public header capture in docs/evidence/mini-ui-refresh/images/site-reference.png). Source code reference: The Builder Header, MyPurchases and index.css, read without modifying the marketplace. The source homepage and mini buyer order page intentionally have different content/auth states; only the shared shell is compared visually. Order cards follow the source MyPurchases layout. This is not a pixel-identical homepage clone.
+Scope: buyer order → download → scenario menu → backend terminal. Existing The Builder visual language retained; layout intentionally changed to support simultaneous action and observation. See [audit](docs/ux-scroll-audit.md).
 
-Rendered implementation: http://127.0.0.1:8799/mini. Desktop viewport1280x720; source capture1268x713, mini1265x712 (native scrollbar differences). No density scaling for focused header comparison. Full comparison canvas2560x760 puts both captures together at native scale. Full download/terminal capture1265x1362. Mobile override390x844 produced375CSS-pixel client and scroll widths; override reset.
+## Visual truth and captures
 
-## Comparison history
+Current-run source screenshots: `docs/evidence/mini-scroll-audit/images/01-start.png` through `05-terminal.png`. Rendered implementation: http://127.0.0.1:8799/mini, final desktop `11-final-desktop.png`, mobile `09-mobile-fixed.png`, race `08-race-fixed.png` in the same directory.
 
-- First comparison: docs/evidence/mini-ui-refresh/images/comparison-new.png plus header-comparison-new.png. [P2] Brand size/weight was lighter than the live header. Set desktop wordmark24px/900 and source-style B mark20px; use900 for headings/order titles. Re-captured both views and regenerated combined evidence.
-- Final focused comparison: docs/evidence/mini-ui-refresh/images/header-comparison-new.png; final full comparison: docs/evidence/mini-ui-refresh/images/comparison-new.png. Source and mini share Space Grotesk, warm off-white #FDFBF7, yellow #FFD23F, green #0EAD69, black3px borders and hard button shadows. Shell proportions and card spacing follow the source vocabulary. No actionable P0/P1/P2 visual finding remains for the requested mini buyer scope.
-- Static reviewer found [P2] old race cells could reappear after session reset. resetObservation now clears both grid and counts. Re-tested a100-request run, created a fresh session, selected race using Enter: hidden=true, cells=0. Follow-up review found no remaining introduced issue.
+Desktop CSS viewport 1280×720. Old capture pixels 1265×712 (native scrollbar/capture boundary); final 1280×720. Both are native screenshot pixels; comparison uses no stretching, no density scaling, and pads the old image. This is a layout before/after comparison, not a pixel-identical design target. Old download is ready; final download has received bytes and shows success. Scenario selection also differs. These differences are not fidelity defects.
+
+Full-view comparison: `images/comparison.png` (2560×764). Focused card comparison: `images/focused-comparison.png` (1400×510), native crops with gray padding; the entire card and CTA remain visible. Both were opened together and inspected. Mobile CSS viewport/capture 390×844; further 375×844 width check had clientWidth=scrollWidth=375. Short-height check 900×500 enabled document scrolling.
+
+## Findings and comparison history
+
+1. [P1, resolved] Before: expanded download + terminal document height 1362 px; at scrollY642 the download CTA was above the viewport. After: bounded flex workspace, compact card, terminal reserves its own bottom space. Final document height720 at viewport720; download CTA, scenario action and terminal simultaneously visible. Full comparison above verifies this intentional composition change.
+2. [P2, resolved] Scenario menu and execution button were separated by the website. Instructions/action now sit directly under desktop menu or next to mobile select, including unmet prerequisites. Verified menu selection preserves the current order and does not run tests.
+3. [P2, resolved] Intermediate compact terminal tabs had a stray vertical scrollbar; constrained overflow-y and re-captured `07-download-fixed.png`. Status after a successful grant was too generic; final summary reports HTTP200,67bytes and checksum match. Ordinary traces follow actual new lines only when already near the bottom. Final desktop/mobile captures verify the revised presentation.
+4. [P3, accepted] Race traces do not auto-follow while the result grid is shown. This deliberately keeps1/99 counts and all100 cells visible; users can scroll down to the actual trace. Static reviewer suggested removing that condition, but that would push the result grid out of the compact pane. No backend event is discarded.
 
 ## Required fidelity surfaces
 
-- Typography: Space Grotesk loaded like the source, with local system fallback; display and action hierarchy checked in desktop/mobile renders. Wordmark weight corrected after comparison.
-- Spacing/layout:80px website header, centered buyer content, white bordered stacked cards,80px desktop product fallback, green right-aligned actions. Lab navigation is outside the website; narrow screens wrap order actions and scroll scenario menu within its own container.
-- Color/tokens: exact source palette above, neutral lab chrome, separate dark terminal. Request log blue/neutral text and success summary green have readable contrast.
-- Assets: source Header/MyPurchases use native B letter marks; the mini follows that actual fallback. No creator artwork or production product records copied, and no generated imagery used.
-- Copy/content: synthetic two-order flow and demo account stated explicitly. Menu actions describe preconditions and expected results; no fabricated completion or backend timing. Website links to Marketplace/Features open the actual public website in a separate tab. Those product pages are outside the mini.
+- Typography: Space Grotesk and fallback retained; brand/headings retain strong source weights. Download title/CTA readable in focused native-pixel comparison. Mobile heading wraps without horizontal overflow. Terminal uses monospace and wraps long details.
+- Spacing/layout: compact64px desktop header, two-column download card,220px scenario rail, bottom terminal in flex flow. No overlay on buyer controls. Mobile uses stacked content and native select. Long content scrolls internally; <=560px height uses document scrolling for access at short heights/zoom.
+- Colors/tokens: source warm white, yellow, green, black3px borders and hard shadows retained. Dark terminal remains distinct; success feedback is visible next to the action. This was a visual review, not an instrumented contrast certification.
+- Image quality/assets: no new image asset, SVG substitute or generated art. Existing native letter marks and synthetic product fallback retained. No creator artwork or records copied.
+- Copy/content: duplicate announcement/footer removed from demo flow. Demo account/lab identity remains. Preconditions explain disabled actions. HTTP/byte/checksum summaries originate from completed actual requests; no simulated backend logs or timings added.
 
-## Interaction verification
+## Verification and limits
 
-Browser manual checks: paid67-byte receipt with matching SHA256; same UUID200 retry and unchanged D1 time/key; other UUID403 and unchanged D1; free67-byte receipt/checksum while terminal hidden; open/close terminal via keyboard; all four terminal views; menu changes preserve selected order and do not execute tests;100requests gave1x200/99x403, D1 winner matched; fresh-session stale-result regression fixed; session restored after reload. Mobile menu and document width checked. Final captured error/warning console empty. OS completion of optional save link not asserted.
+Browser manual checks: paid67byte download/checksum; same-key retry200; different-key403; renewal and new download;100UUID race1x200/99x403 with D1 winner; desktop/mobile menu selection preserves order; terminal toggle Enter and aria-expanded false/true; D1/R2, JSON/requestId and setup views; focusable terminal region and End scroll to2808px in2958px content;390px and375px mobile widths;900×500 fallback; final console error/warning list empty. OS save completion not asserted. No screen-reader/full WCAG or cross-browser certification.
 
-Syntax/typecheck,29Workers/D1/R2 tests and17real-HTTP checks passed. The HTTP page marker was updated from removed heading copy to the stable terminal-toggle identifier. CI source evidence records exact tested revision separately. Manual observations are not counted as automated DOM tests.
+Automated evidence is recorded separately with exact tested source SHA after a clean source commit. Manual observations do not increase automated counts. Backend, Project1 index.html, marketplace production and report PDFs unchanged.
 
-Project1 index.html and backend implementation unchanged. No marketplace deploy or cloud resource provisioning. Previous immutable evidence under docs/evidence/mini-web remains historical; refreshed screenshots and checks are published under docs/evidence/mini-ui-refresh. The report PDF and Week7 report were not revised for this UI-only request.
+Implementation checklist: compact layout, adjacent scenario controls, open compact terminal, mobile select, keyboard scroll, real-state summaries and before/after comparison completed. No actionable P0/P1/P2 remains in this scoped review.
 
 final result: passed

@@ -11,6 +11,8 @@ Chạy npm ci, npm run db:migrate, npm run dev; mở http://127.0.0.1:8799/mini.
 7. Kiểm tra bàn phím và màn hình375px: nút thao tác có focus, các vùng đọc được, không tràn ngang. Kiểm tra console không có lỗiscript.
 8. Đổi qua năm mục trong menu kịch bản: đơn/token và kết quả tải vẫn giữ nguyên; chưa bấm nút chạy thì chưa có yêu cầu kiểm thử. Dùng Tab/Enter để chọn menu.
 9. Mở/ẩn terminal; chuyển Request log, D1 / R2, JSON, hướng dẫn chạy. Kết quả tiếp tục được ghi khi terminal đóng. Kiểm tra `aria-expanded` khớp trạng thái mở/ẩn.
-10. Sau phép thử 100 yêu cầu, tạo phiên mới hoặc mở đơn khác rồi quay lại menu 100 yêu cầu: kết quả cũ không được hiện lại. Trên điện thoại, menu cuộn ngang trong vùng riêng, không làm trang tràn ngang.
+10. Sau phép thử 100 yêu cầu, tạo phiên mới hoặc mở đơn khác rồi quay lại menu 100 yêu cầu: kết quả cũ không được hiện lại. Trên điện thoại, chọn kịch bản qua danh sách chọn, không làm trang tràn ngang.
+11. Terminal mặc định mở gọn. Ở 1280×720, nút tải, nút chạy kịch bản và terminal cùng hiện trong màn hình; document không cần cuộn. Ở 375×844, không tràn ngang; nội dung dài cuộn trong website/terminal. Ở 900×500, trang cho phép cuộn tự nhiên và không mất nút.
+12. Dùng Enter mở/ẩn terminal; Tab tới vùng nội dung backend rồi PageDown/End để đọc log hoặc JSON dài. Tóm tắt HTTP vẫn hiện khi thu gọn. Log theo dòng mới khi đang ở cuối; phép thử 100 yêu cầu giữ lưới kết quả ở đầu vùng terminal, có thể cuộn xuống đọc trace.
 
 Kết quả trình duyệt công bố là quan sát riêng, không tự cộng vào sốtest Vitest. scripts/mini-smoke.mjs chạy lại phần HTTP/D1/R2 bằng CLI; nó không giả lập các thao tác DOM. Lưu tệp xuống hệ điều hành và thử trênprovider được báo cáo riêng nếu đã thực hiện.

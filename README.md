@@ -16,12 +16,13 @@ npm run db:migrate
 npm run dev
 ```
 
-Mở **http://127.0.0.1:8799/mini**. Chọn **Bắt đầu phiên demo**, rồi tải một trong hai đơn mẫu. Website giữ header, font, màu và thẻ đơn hàng theo The Builder. Menu kịch bản nằm bên trái (cuộn ngang trên điện thoại); terminal phía dưới có thể mở/ẩn bằng **Hiện terminal / Ẩn terminal**.
+Mở **http://127.0.0.1:8799/mini**. Chọn **Bắt đầu phiên demo**, rồi tải một trong hai đơn mẫu. Website giữ header, font, màu và thẻ đơn hàng theo The Builder. Menu kịch bản nằm bên trái; điện thoại dùng danh sách chọn. Terminal mặc định mở gọn ở đáy, có thể mở/ẩn bằng **Hiện terminal / Ẩn terminal**.
 
 - **Đơn hàng của tôi:** phiên riêng có đơn trả phí 49.000 đồng và đơn miễn phí; đều dùng trạng thái paid tổng hợp.
 - **Trang tải:** chỉ bấm nút mới cấp quyền. UUID gắn với token được giữ trong sessionStorage để retry dưới 60 giây. Tệp nhận bằng fetch để kiểm tra checksum trước khi người dùng chọn lưu.
-- **Menu kịch bản:** mua hàng và tải tệp, thử lại cùng khóa, chặn khóa khác, cấp lại liên kết, 100 yêu cầu đồng thời. Đổi menu giữ nguyên đơn và token đang chọn, không tự gửi yêu cầu kiểm thử. Nút chạy nằm ở phần hướng dẫn dưới website; retry/khóa khác chỉ bật sau khi token đã sử dụng.
+- **Menu kịch bản:** mua hàng và tải tệp, thử lại cùng khóa, chặn khóa khác, cấp lại liên kết, 100 yêu cầu đồng thời. Đổi menu giữ nguyên đơn và token đang chọn, không tự gửi yêu cầu kiểm thử. Hướng dẫn, điều kiện và nút chạy nằm cạnh menu; retry/khóa khác chỉ bật sau khi token đã sử dụng.
 - **Terminal phía dưới:** các mục Request log, D1 / R2, JSON và hướng dẫn chạy. Trace trả từ handler có request ID; các phép đọc D1 và checksum do client ghi rõ nguồn. Ẩn terminal chỉ thu gọn giao diện, không dừng hay giả lập backend.
+- **Bố cục:** website và terminal chia sẻ chiều cao màn hình, mỗi vùng có thể cuộn riêng khi nội dung dài. Trên màn hình cao tối đa 560 px, trang cho phép cuộn tự nhiên để các nút vẫn truy cập được. [Audit và bằng chứng trước/sau](docs/ux-scroll-audit.md).
 - **Cấp lại:** phiên sở hữu đơn được dùng token còn chưa tiêu thụ hoặc nhận token mới; phiên khác không đọc/renew đơn đó.
 
 Mỗi phiên demo là capability ngẫu nhiên, lưu dạng hash và hết hạn sau 24 giờ; đây không phải tài khoản người mua. Không có giao dịch mua thật, ngân hàng hoặc email. Local và remote dùng cùng handler/SQL; public repo là bản thu gọn độc lập, không chứa toàn bộ sản phẩm riêng tư. Mã được cấp phép [MIT](LICENSE).
