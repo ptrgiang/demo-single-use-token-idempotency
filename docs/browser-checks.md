@@ -9,5 +9,8 @@ Chạy npm ci, npm run db:migrate, npm run dev; mở http://127.0.0.1:8799/mini.
 5. Kiểm thử100yêu cầu: lưới cập nhật theo response;1x200/99x403, khóa thắng trùng D1. Đây là kiểm tra cạnh tranh, không phải benchmark.
 6. Tải lại trang: khôi phục cùng hai đơn qua sessionStorage. Remote yêu cầu nhập lại mã môi trường; sau đó khôi phục phiên cũ, không ghi mã môi trường vào storage.
 7. Kiểm tra bàn phím và màn hình375px: nút thao tác có focus, các vùng đọc được, không tràn ngang. Kiểm tra console không có lỗiscript.
+8. Đổi qua năm mục trong menu kịch bản: đơn/token và kết quả tải vẫn giữ nguyên; chưa bấm nút chạy thì chưa có yêu cầu kiểm thử. Dùng Tab/Enter để chọn menu.
+9. Mở/ẩn terminal; chuyển Request log, D1 / R2, JSON, hướng dẫn chạy. Kết quả tiếp tục được ghi khi terminal đóng. Kiểm tra `aria-expanded` khớp trạng thái mở/ẩn.
+10. Sau phép thử 100 yêu cầu, tạo phiên mới hoặc mở đơn khác rồi quay lại menu 100 yêu cầu: kết quả cũ không được hiện lại. Trên điện thoại, menu cuộn ngang trong vùng riêng, không làm trang tràn ngang.
 
 Kết quả trình duyệt công bố là quan sát riêng, không tự cộng vào sốtest Vitest. scripts/mini-smoke.mjs chạy lại phần HTTP/D1/R2 bằng CLI; nó không giả lập các thao tác DOM. Lưu tệp xuống hệ điều hành và thử trênprovider được báo cáo riêng nếu đã thực hiện.
