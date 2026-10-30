@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Please cite the exact Git commit used for reproduction; saved demo evidence identifies its tested commit separately."
+type: software
+title: "Demo single-use token and idempotency"
+authors:
+  - family-names: "Phạm"
+    given-names: "Trường Giang"
+repository-code: "https://github.com/ptrgiang/demo-single-use-token-idempotency"
+url: "https://github.com/ptrgiang/demo-single-use-token-idempotency"
+version: "1.0.0"
+date-released: "2026-10-30"
+abstract: "Standalone local Hono/Workers/D1/R2 example of atomic token redemption, bounded same-key retries, and controlled HTTP response loss. Separate from private application regression evidence."
