@@ -1,0 +1,23 @@
+name = "single-use-token-mini-demo"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+preview_urls = false
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+[vars]
+DEMO_REMOTE = "true"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "replace-with-demo-database-name"
+database_id = "00000000-0000-0000-0000-000000000001"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "replace-with-demo-r2-bucket"

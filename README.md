@@ -1,13 +1,66 @@
-# Single-use token and idempotency demo
+# The Builder Mini · single-use token & idempotency
 
-Ví dụ độc lập để tái lập cơ chế **tiêu thụ token nguyên tử**, **thử lại bằng cùng khóa trong dưới 60 giây**, và **từ chối khóa khác**. Phần thực thi dùng Hono, Cloudflare Workers runtime, D1 và R2 giả lập cục bộ; không cần tài khoản Cloudflare hoặc thông tin xác thực dịch vụ.
+Ví dụ độc lập để tái lập cơ chế **tiêu thụ token nguyên tử**, **thử lại bằng cùng khóa trong dưới 60 giây**, và **từ chối khóa khác**. Mặc định, Hono chạy trên Workers runtime với D1/R2 cục bộ; không cần tài khoản Cloudflare hoặc thông tin xác thực dịch vụ. Có thể chủ động cấu hình một deployment remote riêng theo hướng dẫn bên dưới.
 
 Đây là mã minh họa thu gọn phục vụ Project 2, tách từ nguyên lý cấp quyền tải của một ứng dụng riêng tư. Repo không chứa toàn bộ ứng dụng, lịch sử Git, dữ liệu khách hàng hoặc bộ hồi quy riêng tư. **Kết quả kiểm thử của demo này độc lập với con số 202/202 trong báo cáo Project 2.**
 
-## Hai cách xem
+## Chạy mini web
 
-- `index.html`: trang mô phỏng trực quan có sẵn. Mở tệp bằng trình duyệt; hiệu ứng và nhật ký được tạo bằng JavaScript, không phải kết quả Worker/D1. Một số kịch bản lịch sử, như prefetch tiêu thụ token, khác API thực thi hiện tại.
-- `src/index.ts` cùng `tests/`: mã chạy thật trên runtime cục bộ, truy vấn D1 và nhận byte từ R2. Dùng phần này để kiểm chứng thuật toán và trích dẫn mã.
+Cần Node.js **24**, Git và npm. Không cần tài khoản Cloudflare cho local.
+
+```sh
+git clone https://github.com/ptrgiang/demo-single-use-token-idempotency.git
+cd demo-single-use-token-idempotency
+npm ci
+npm run db:migrate
+npm run dev
+```
+
+Mở **http://127.0.0.1:8799/mini**. Chọn **Bắt đầu phiên demo**, rồi tải một trong hai đơn mẫu. Trang tải giữ cách trình bày và thao tác chủ động của The Builder; inspector phía dưới hiển thị HTTP và trace máy chủ thật, trạng thái D1 trước/sau, số byte cùng SHA-256 tệp R2.
+
+- **Đơn hàng của tôi:** phiên riêng có đơn trả phí 49.000 đồng và đơn miễn phí; đều dùng trạng thái paid tổng hợp.
+- **Trang tải:** chỉ bấm nút mới cấp quyền. UUID gắn với token được giữ trong sessionStorage để retry dưới 60 giây. Tệp nhận bằng fetch để kiểm tra checksum trước khi người dùng chọn lưu.
+- **Backend phía dưới:** trace trả từ handler có request ID; các phép đọc D1 và checksum do client ghi rõ nguồn. Có nút thử cùng khóa/khác khóa, cấp lại link và 100 yêu cầu.
+- **Cấp lại:** phiên sở hữu đơn được dùng token còn chưa tiêu thụ hoặc nhận token mới; phiên khác không đọc/renew đơn đó.
+
+Mỗi phiên demo là capability ngẫu nhiên, lưu dạng hash và hết hạn sau 24 giờ; đây không phải tài khoản người mua. Không có giao dịch mua thật, ngân hàng hoặc email. Local và remote dùng cùng handler/SQL; public repo là bản thu gọn độc lập, không chứa toàn bộ sản phẩm riêng tư. Mã được cấp phép [MIT](LICENSE).
+
+## Tự triển khai
+
+[Hướng dẫn Cloudflare Worker + D1 + R2](docs/deploy.md) gồm cấu hình mẫu, đăng nhập, tạo tài nguyên riêng, migration, secret, kiểm tra local chế độ remote, dry-run và deploy. Remote mặc định **tắt**; cần chủ động bật `DEMO_REMOTE` và đặt `DEMO_ACCESS_TOKEN` cùng `DEMO_SIGNING_KEY` riêng, mỗi giá trị dài ít nhất 32 ký tự. Không dùng khóa ký fixture công khai ở môi trường remote. Mọi API remote, trừ cấu hình công khai, yêu cầu `X-Demo-Access`; các thao tác đơn còn kiểm tra capability của phiên. Mã truy cập chỉ giữ trong bộ nhớ trang.
+
+Repo không tự deploy khi push. Cấu hình tự triển khai không dùng tài nguyên The Builder. Tài liệu và dry-run không phải bằng chứng một bản cloud đã được phát hành.
+
+## Chạy kiểm thử như bản công bố
+
+```sh
+npm run check          # TypeScript + cú pháp các script giao diện
+npm test               # Workers runtime/D1/R2, core + lab + mini
+npm run test:network   # Mất phản hồi sau khi D1 đã ghi, rồi retry
+npm run test:mini      # HTTP thật: phiên, sở hữu, tải paid/free, renew, 100 UUID cạnh tranh
+```
+
+Hai script HTTP tự khởi động Worker với trạng thái tạm ở cổng 18799/18800, dừng và dọn dữ liệu khi xong; không dùng phiên đang mở ở cổng 8799. Chúng kiểm tra byte thực và checksum, không chỉ HTTP 200. Các mốc 59/60/61 giây dùng đồng hồ kiểm soát trong test, không chờ thời gian thật.
+
+Để đối chiếu đúng phiên bản: checkout commit được dẫn, giữ cây mã sạch, chạy `npm ci` và `npm run evidence`. Lệnh này chạy các kiểm tra trên, ghi `testedCommit`, manifest SHA-256 và artifact vào `evidence/`. CI chạy cùng lệnh và lưu artifact theo SHA. Các dữ liệu đã công bố nằm trong [`docs/evidence/`](docs/evidence/); đọc `testedCommit` trong mỗi bundle, không đồng nhất commit chứa artifact với commit đã kiểm thử. Hướng dẫn thao tác trình duyệt: [docs/browser-checks.md](docs/browser-checks.md).
+
+## Các vùng demo
+
+- `/mini`: mini web Project 2 và inspector, có thể chạy local hoặc tự triển khai.
+- `/lab#project1`: giữ nguyên sáu mô phỏng lịch sử Project 1; không phải backend thật, một số hành vi như prefetch khác chính sách mới.
+- `/lab#project2`: bộ sáu kịch bản lõi, chạy thật trên local hoặc đọc bằng chứng 18 ca đã lưu. Chế độ trang tĩnh không gọi localhost hay API sản phẩm.
+
+## Giao diện kiểm thử Project 2
+
+Sau `npm ci`, chạy `npm run db:migrate` và `npm run dev`, rồi mở **http://127.0.0.1:8799/lab**. Worker phục vụ chính `index.html`, vì vậy mọi yêu cầu thử nghiệm cùng origin với API local. Chọn Project 2, một trong sáu kịch bản và **Chạy kịch bản đã chọn**.
+
+Mặc định **Thực hiện từng bước** được bật: trang khởi tạo dữ liệu mẫu, đọc D1 rồi chờ bạn gửi yêu cầu cấp quyền, retry, đổi khóa hoặc nhận tệp. Diễn biến chỉ ghi nhận hành động/phản hồi đã xảy ra. Có thể dừng ở bước chờ hoặc bỏ chọn để chạy tự động. Retry dùng đồng hồ thật; hãy thực hiện trước khi cửa sổ dưới 60 giây đóng. Các mốc chính xác 59/60/61 giây vẫn thuộc bộ kiểm thử với đồng hồ kiểm soát.
+
+Danh sách bên trái ghi kết quả kỳ vọng; bên phải ghi phản hồi thực tế, kiểm tra đạt/chưa đạt, D1 trước/sau và JSON. Phép thử 100 UUID cập nhật từng ô khi có phản hồi thật. Phép thử tệp nhận byte rồi so SHA-256 với fixture độc lập. Các trường hợp hết hạn/chưa thanh toán/thiếu tệp nằm trong phần bổ sung. Phép thử proxy ngắt phản hồi chạy bằng `npm run test:network`.
+
+Mỗi lần chạy đặt lại fixture lịch sử có mã nhỏ hơn 1000 của demo local (không xóa phiên, đơn hoặc token của mini). Giao diện chỉ bật chạy thật tại `127.0.0.1` để các tab dùng chung origin và Web Lock; các hostname khác chỉ xem kết quả đã lưu. Không chạy thêm API reset thủ công trong lúc kiểm thử. Cần trình duyệt hiện hành có Web Crypto và Web Locks. Bộ bằng chứng nhúng là lần chạy 18 ca ở commit cũ; các ca lab và mini hiện tại không được cộng hồi tố vào dữ liệu đó.
+
+Vùng `/lab` trình bày cơ chế lõi. Vùng `/mini` bổ sung phiên đơn mẫu, cấp lại link theo quyền phiên, UUID theo token và giao diện người mua. Tài khoản JWT, thanh toán thật và giao diện ứng dụng đầy đủ thuộc bản triển khai riêng. Xem [bản đồ phạm vi](docs/traceability.md) và [kiểm tra giao diện](design-qa.md).
 
 ## Chạy lại từ checkout mới
 
@@ -20,9 +73,10 @@ npm ci
 npm run check
 npm test
 npm run test:network
+npm run test:mini
 ```
 
-`npm test` chạy trong Workers runtime với D1/R2 cục bộ. `test:network` tự tạo trạng thái tạm, áp dụng hai migration, khởi động Wrangler trên `127.0.0.1:18799`, chạy thử nghiệm HTTP rồi dừng dịch vụ và xóa trạng thái tạm. Cổng 18799 cần đang trống. Lệnh này không dùng trạng thái của phiên demo tương tác.
+`npm test` chạy trong Workers runtime với D1/R2 cục bộ. Hai lệnh HTTP smoke tự tạo trạng thái tạm và áp dụng các migration của repo; `test:network` dùng cổng `127.0.0.1:18799`, còn `test:mini` dùng `127.0.0.1:18800`. Mỗi lệnh dừng Worker và dọn trạng thái tạm khi xong; cần để trống cả hai cổng. Chúng không dùng trạng thái của phiên demo tương tác.
 
 Để tạo bộ bằng chứng gắn với **commit sạch** đang checkout:
 
@@ -49,7 +103,7 @@ curl http://127.0.0.1:8799/api/demo/state/a10b20c30d40e50f60718293a4b5c6d7
 curl -H "Accept: application/json" "http://127.0.0.1:8799/api/download/a10b20c30d40e50f60718293a4b5c6d7?idem=11111111-1111-4111-8111-111111111111"
 ```
 
-Gửi lại yêu cầu cuối với cùng khóa trước 60 giây: nhận URL. Đổi khóa thành một UUIDv4 khác: HTTP 403. URL trong trường `downloadUrl` trả tệp tổng hợp `sample-notes.txt`. Mặc định, khi không yêu cầu JSON, API trả HTTP 302. Lệnh reset xóa **các bảng demo cục bộ** và khởi tạo lại dữ liệu mẫu.
+Gửi lại yêu cầu cuối với cùng khóa trước 60 giây: nhận URL. Đổi khóa thành một UUIDv4 khác: HTTP 403. URL trong trường `downloadUrl` trả tệp tổng hợp `sample-notes.txt`. Mặc định, khi không yêu cầu JSON, API trả HTTP 302. Lệnh reset chỉ xóa và khởi tạo lại fixture lịch sử có mã nhỏ hơn 1000; các phiên, đơn và token mini được giữ nguyên.
 
 ## Thuật toán
 
@@ -80,12 +134,12 @@ UPDATE có điều kiện trên cùng một hàng D1
 
 ## Phạm vi và giới hạn
 
-- Các bảng chỉ gồm sản phẩm, trạng thái đơn hàng mẫu và lượt cấp quyền. Không có tài khoản, xác thực người mua, thanh toán, cấp lại token, email, KV rate limit hoặc chính sách IP/device/N.
-- GET hiện thay đổi trạng thái; tách bước đổi token sang POST là hướng thiết kế tiếp theo, chưa được thực hiện ở đây.
-- URL HMAC dùng **khóa fixture công khai** và chỉ trả tệp mẫu. Đây không phải AWS SigV4 và không kiểm chứng ACL/bucket Cloudflare thật.
+- Các bảng demo gồm sản phẩm, đơn mẫu, lượt cấp quyền và capability phiên mini lưu dạng hash. Không có tài khoản người mua, xác thực tài khoản, thanh toán, email, KV rate limit hoặc chính sách IP/device/N.
+- Endpoint lõi `GET /api/download/:token` ghi trạng thái tiêu thụ. Luồng mini có `POST /api/mini/orders/:id/renew` để đơn thuộc phiên dùng lại token chưa tiêu thụ hoặc nhận token mới.
+- Local dùng **khóa fixture công khai** cho URL HMAC; remote yêu cầu khóa riêng cấu hình bởi người triển khai. URL chỉ trỏ tới tệp mẫu. HMAC không phải AWS SigV4 và demo không xác nhận ACL của bucket Cloudflare.
 - Token và khóa có thể được chuyển tiếp; URL đã cấp còn dùng được đến khi hết hạn dù trạng thái đơn sau đó thay đổi. Không ngăn sao chép tệp hoặc chứng minh nhận tệp đúng một lần.
-- Endpoint reset và đọc trạng thái cố ý mở để quan sát demo. Ràng buộc hostname loopback chỉ tránh truy cập nhầm, **không phải xác thực**. Không dùng repo này để phân phối dữ liệu thật hoặc deploy nguyên trạng.
-- Không có tài nguyên cloud thật trong cấu hình; database ID là giá trị giả. Không có lệnh hay workflow triển khai.
+- Trong local, endpoint reset và đọc trạng thái fixture cũ mở để quan sát và chỉ nhận loopback; giới hạn này **không phải xác thực**. Ở remote, mọi API trừ config công khai cần `X-Demo-Access`; endpoint reset/state cũ bị tắt. Capability `X-Mini-Session` giới hạn đọc/renew đơn mini, nhưng không phải đăng nhập người mua.
+- Cấu hình local mặc định không có tài nguyên cloud thật; database ID là giá trị giả. Mẫu tự triển khai riêng nằm trong `wrangler.deploy.example.toml`, bật remote có chủ đích; không có workflow tự deploy.
 
 ## Trích dẫn
 
@@ -97,4 +151,4 @@ Xem [bản đồ mã nguồn và kiểm chứng](docs/traceability.md) để đ�
 
 ## Lần xác minh được lưu
 
-Ngày 30/10/2026, commit [`96b6875`](https://github.com/ptrgiang/demo-single-use-token-idempotency/tree/96b687505e6f6f1d03a941d0b5d79f65d9eeafb2) được chạy trên trạng thái sạch: kiểm tra kiểu đạt, **18/18 ca** đạt và thử nghiệm mất phản hồi qua proxy đạt. [Bộ bằng chứng](docs/evidence/README.md) lưu kết quả gốc cùng trạng thái D1 trước/sau và SHA-256. Đây là lần chạy demo độc lập.
+Ngày 30/10/2026, commit [`96b6875`](https://github.com/ptrgiang/demo-single-use-token-idempotency/tree/96b687505e6f6f1d03a941d0b5d79f65d9eeafb2), trước luồng mini và cấu hình remote, được chạy trên trạng thái sạch: kiểm tra kiểu đạt, **18/18 ca** đạt và thử nghiệm mất phản hồi qua proxy đạt. [Bộ bằng chứng](docs/evidence/README.md) lưu kết quả gốc cùng trạng thái D1 trước/sau và SHA-256. Đây là lần chạy demo độc lập, không phải kết quả kiểm thử của các thay đổi mini hiện tại.

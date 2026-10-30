@@ -15,8 +15,10 @@ const run = (entry, args) => execFileSync(process.execPath, [resolve(root, entry
   cwd: root, stdio: 'inherit', env: { ...process.env, WRANGLER_SEND_METRICS: 'false' },
 });
 run('node_modules/typescript/bin/tsc', ['--noEmit']);
+run('scripts/check-client-syntax.mjs', []);
 run('node_modules/vitest/vitest.mjs', ['run', '--reporter=default', '--reporter=json', '--outputFile=evidence/vitest.json']);
 run('scripts/network-smoke.mjs', []);
+run('scripts/mini-smoke.mjs', []);
 if (git('status', '--porcelain', '--untracked-files=normal')) throw new Error('Tracked source changed during verification');
 const files = git('ls-files').split('\n');
 const manifest = [];
@@ -27,7 +29,7 @@ for (const path of files) {
 await writeFile(resolve(root, 'evidence/source-manifest.json'), JSON.stringify({ revision, files: manifest }, null, 2)+'\n');
 const vitest = JSON.parse(await readFile(resolve(root, 'evidence/vitest.json'), 'utf8'));
 const artifacts = [];
-for (const path of ['vitest.json','network-smoke.json','source-manifest.json']) {
+for (const path of ['vitest.json','network-smoke.json','mini-smoke.json','source-manifest.json']) {
   const bytes = await readFile(resolve(root, 'evidence', path));
   artifacts.push({ path, sha256: createHash('sha256').update(bytes).digest('hex') });
 }
@@ -37,7 +39,7 @@ const summary = {
   node: process.version, platform: process.platform,
   checks: { typecheck: 'passed', testsPassed: vitest.numPassedTests,
     testsTotal: vitest.numTotalTests, testsFailed: vitest.numFailedTests,
-    networkResponseLoss: 'passed' }, artifacts,
+    networkResponseLoss: 'passed', miniWebHttp: 'passed' }, artifacts,
   scope: 'Standalone public demo only; separate from the private Project 2 regression suite',
 };
 await writeFile(resolve(root, 'evidence/summary.json'), JSON.stringify(summary, null, 2)+'\n');

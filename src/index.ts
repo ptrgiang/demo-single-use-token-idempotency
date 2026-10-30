@@ -1,6 +1,10 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import labPage from '../index.html';
 import { FIXTURE_KEY, FIXTURE_TEXT, MISSING_FIXTURE_KEY, TOKENS } from './fixtures';
-import type { Env } from './types';
+import { registerMiniRoutes } from './mini';
+import type { AppEnv, Env } from './types';
 
 type GrantRow = {
   file_key: string;
@@ -17,6 +21,7 @@ const DOWNLOAD_TOKEN = /^[a-f0-9]{32}$/i;
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 const SIGNED_URL_SECONDS = 300;
+const FIXTURE_SIGNING_KEY = 'public-demo-fixture-key-not-for-real-files';
 
 function toSqlUtc(milliseconds: number): string {
   const date = new Date(milliseconds);
@@ -107,20 +112,76 @@ function getSingleQueryValue(requestUrl: string, name: string): string | null {
   return values.length === 1 ? values[0] : null;
 }
 
-export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings: Env }> {
+export function createApp(options: { now?: () => number } = {}): Hono<AppEnv> {
   const now = options.now ?? Date.now;
-  const app = new Hono<{ Bindings: Env }>();
+  const app = new Hono<AppEnv>();
+
+  const isRemote = (env: Env) => env.DEMO_REMOTE === 'true';
+  const hasRemoteSecrets = (env: Env) => {
+    const signingKey = env.DEMO_SIGNING_KEY;
+    return typeof env.DEMO_ACCESS_TOKEN === 'string'
+      && env.DEMO_ACCESS_TOKEN.length >= 32
+      && typeof signingKey === 'string'
+      && signingKey.length >= 32
+      && signingKey !== FIXTURE_SIGNING_KEY
+      && !/(?:fixture|not-for-real)/i.test(signingKey);
+  };
+
+  const addTrace = (c: Context<AppEnv>, stage: string, detail: string) => {
+    c.get('trace').push({ stage, detail });
+  };
+
+  const isGrantRequest = (c: Context<AppEnv>) =>
+    new URL(c.req.url).pathname.startsWith('/api/download/');
+  const isTracedApi = (c: Context<AppEnv>) => {
+    const pathname = new URL(c.req.url).pathname;
+    return isGrantRequest(c) || pathname.startsWith('/api/mini/');
+  };
+
+  const jsonResponse = (
+    c: Context<AppEnv>,
+    body: Record<string, unknown>,
+    status: ContentfulStatusCode,
+  ) => isTracedApi(c)
+    ? c.json({ ...body, requestId: c.get('requestId'), _trace: c.get('trace') }, status)
+    : c.json(body, status);
+
+  const denyGrant = (c: Context<AppEnv>, message: string, status: ContentfulStatusCode) =>
+    jsonResponse(c, { error: message }, status);
 
   app.use('*', async (c, next) => {
     c.header('Cache-Control', 'private, no-store');
     c.header('Referrer-Policy', 'no-referrer');
+    const suppliedRequestId = c.req.header('X-Request-Id') ?? '';
+    const requestId = /^[A-Za-z0-9._:-]{1,80}$/.test(suppliedRequestId)
+      ? suppliedRequestId
+      : crypto.randomUUID();
+    c.set('requestId', requestId);
+    c.set('trace', []);
+    c.header('X-Request-Id', requestId);
     await next();
   });
 
   app.use('*', async (c, next) => {
     const hostname = new URL(c.req.url).hostname.toLowerCase();
-    if (!LOOPBACK_HOSTS.has(hostname)) {
-      return c.json({ error: 'This demo only accepts loopback requests.' }, 403);
+    const pathname = new URL(c.req.url).pathname;
+    if (!isRemote(c.env) && !LOOPBACK_HOSTS.has(hostname)) {
+      addTrace(c, 'host_validation', 'Rejected a non-loopback request in local mode.');
+      if (isGrantRequest(c)) return denyGrant(c, 'This demo only accepts loopback requests.', 403);
+      return jsonResponse(c, { error: 'This demo only accepts loopback requests.' }, 403);
+    }
+
+    const publicRemotePaths = new Set(['/api/mini/config']);
+    if (isRemote(c.env) && pathname.startsWith('/api/') && !publicRemotePaths.has(pathname)) {
+      if (!hasRemoteSecrets(c.env)) {
+        addTrace(c, 'remote_configuration', 'Remote API is closed because required secrets are missing or invalid.');
+        return jsonResponse(c, { error: 'Remote demo APIs are not configured.' }, 503);
+      }
+      if (c.req.header('X-Demo-Access') !== c.env.DEMO_ACCESS_TOKEN) {
+        addTrace(c, 'remote_access', 'Request did not provide the configured demo access token.');
+        return jsonResponse(c, { error: 'A valid demo access token is required.' }, 401);
+      }
+      addTrace(c, 'remote_access', 'Configured demo access token validated.');
     }
     await next();
   });
@@ -133,7 +194,13 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
     'Redeem with GET /api/download/<token>?idem=<UUIDv4>.\n',
   ));
 
+  app.get('/lab', (c) => c.html(labPage));
+  app.get('/lab/', (c) => c.html(labPage));
+
+  registerMiniRoutes(app, now);
+
   app.post('/api/demo/reset', async (c) => {
+    if (isRemote(c.env)) return c.json({ error: 'Legacy demo fixtures are local-only.' }, 404);
     const nowMilliseconds = now();
     const futureExpiry = toSqlUtc(nowMilliseconds + 24 * 60 * 60 * 1000);
     const pastExpiry = toSqlUtc(nowMilliseconds - 60 * 1000);
@@ -144,9 +211,9 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
     await c.env.FILES.delete(MISSING_FIXTURE_KEY);
 
     await c.env.DB.batch([
-      c.env.DB.prepare('DELETE FROM downloads'),
-      c.env.DB.prepare('DELETE FROM orders'),
-      c.env.DB.prepare('DELETE FROM products'),
+      c.env.DB.prepare('DELETE FROM downloads WHERE order_id < 1000'),
+      c.env.DB.prepare('DELETE FROM orders WHERE id < 1000'),
+      c.env.DB.prepare('DELETE FROM products WHERE id < 1000'),
       c.env.DB.prepare('INSERT INTO products (id, file_key) VALUES (?, ?), (?, ?)')
         .bind(1, FIXTURE_KEY, 2, MISSING_FIXTURE_KEY),
       c.env.DB.prepare('INSERT INTO orders (id, product_id, status) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?)')
@@ -170,6 +237,7 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
   });
 
   app.get('/api/demo/state/:token', async (c) => {
+    if (isRemote(c.env)) return c.json({ error: 'Legacy demo state is local-only.' }, 404);
     const token = c.req.param('token');
     if (!DOWNLOAD_TOKEN.test(token)) return c.json({ error: 'Invalid token format.' }, 400);
 
@@ -191,13 +259,23 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
   app.on('HEAD', '/api/download/:token', (c) => c.body(null, 405));
 
   app.get('/api/download/:token', async (c) => {
+    addTrace(c, 'request', 'Grant request reached the download handler.');
+    const respondJson = (body: Record<string, unknown>, status: ContentfulStatusCode) =>
+      jsonResponse(c, body, status);
+    const deny = (message: string, status: ContentfulStatusCode) => denyGrant(c, message, status);
+
     if (c.req.method === 'HEAD') return c.body(null, 405);
     if (isPrefetchRequest(c.req.raw)) {
-      return c.json({ error: 'Prefetch requests cannot redeem demo links.' }, 403);
+      addTrace(c, 'request_validation', 'Rejected a browser prefetch before grant lookup.');
+      return deny('Prefetch requests cannot redeem demo links.', 403);
     }
 
     const token = c.req.param('token');
-    if (!DOWNLOAD_TOKEN.test(token)) return c.json({ error: 'Invalid token format.' }, 400);
+    if (!DOWNLOAD_TOKEN.test(token)) {
+      addTrace(c, 'token_validation', 'Rejected a token with an invalid format.');
+      return deny('Invalid token format.', 400);
+    }
+    addTrace(c, 'token_validation', 'Token format is valid.');
 
     const nowMilliseconds = now();
     const currentTime = toSqlUtc(nowMilliseconds);
@@ -211,19 +289,29 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
         AND o.status = 'paid'
     `).bind(token, currentTime).first<GrantRow>();
 
-    if (!row) return c.json({ error: 'Invalid or expired demo link.' }, 404);
+    if (!row) {
+      addTrace(c, 'grant_lookup', 'No unexpired token for an eligible paid or mini free order was found.');
+      return deny('Invalid or expired demo link.', 404);
+    }
+    addTrace(c, 'grant_lookup', 'Found an unexpired token for an eligible order.');
 
     let idempotencyKey = '';
     if (row.policy_version > 0) {
       idempotencyKey = getSingleQueryValue(c.req.url, 'idem') ?? '';
       if (!UUID_V4.test(idempotencyKey)) {
-        return c.json({ error: 'Provide exactly one valid UUIDv4 idempotency key.' }, 400);
+        addTrace(c, 'idempotency_validation', 'Rejected a missing, duplicate, or invalid UUIDv4 key.');
+        return deny('Provide exactly one valid UUIDv4 idempotency key.', 400);
       }
+      addTrace(c, 'idempotency_validation', 'Accepted exactly one valid UUIDv4 key.');
+    } else {
+      addTrace(c, 'idempotency_validation', 'Policy version 0 does not require an idempotency key.');
     }
 
     if (!await c.env.FILES.head(row.file_key)) {
-      return c.json({ error: 'Demo file is not available.' }, 404);
+      addTrace(c, 'file_preflight', 'The referenced R2 object is missing.');
+      return deny('Demo file is not available.', 404);
     }
+    addTrace(c, 'file_preflight', 'The referenced R2 object exists.');
 
     const downloadUrl = await makeFileUrl(
       c.req.url,
@@ -231,14 +319,18 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
       row.file_key,
       nowMilliseconds,
     );
+    addTrace(c, 'signed_file_url', 'Created a short-lived demo HMAC-SHA-256 file URL.');
     const respondWithUrl = () => requestsJson(c.req.raw)
-      ? c.json({ downloadUrl }, 200)
+      ? respondJson({ downloadUrl }, 200)
       : c.redirect(downloadUrl, 302);
 
-    if (row.policy_version === 0) return respondWithUrl();
+    if (row.policy_version === 0) {
+      addTrace(c, 'grant_policy', 'Served a grandfathered policy version 0 link without consumption.');
+      return respondWithUrl();
+    }
 
     const mutationTime = toSqlUtc(now());
-    const consumed = await c.env.DB.prepare(`
+    const grantUpdate = await c.env.DB.prepare(`
       UPDATE downloads
       SET used_at = COALESCE(used_at, ?),
           idempotency_key = COALESCE(idempotency_key, ?)
@@ -259,7 +351,14 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
         )
     `).bind(mutationTime, idempotencyKey, token, mutationTime, idempotencyKey, mutationTime).run();
 
-    if (consumed.meta.changes > 0) return respondWithUrl();
+    if (grantUpdate.meta.changes > 0) {
+      addTrace(
+        c,
+        'grant_update',
+        'The conditional update accepted a first grant or a same-key retry; compare before and after state to tell which.',
+      );
+      return respondWithUrl();
+    }
 
     const currentTimeForRetry = toSqlUtc(now());
     const current = await c.env.DB.prepare(`
@@ -272,15 +371,20 @@ export function createApp(options: { now?: () => number } = {}): Hono<{ Bindings
         AND o.status = 'paid'
     `).bind(currentTimeForRetry, token, currentTimeForRetry).first<CurrentGrantRow>();
 
-    if (!current) return c.json({ error: 'Invalid or expired demo link.' }, 404);
+    if (!current) {
+      addTrace(c, 'grant_recheck', 'The order or token became unavailable during grant processing.');
+      return deny('Invalid or expired demo link.', 404);
+    }
     if (
       current.used_at !== null &&
       current.idempotency_key === idempotencyKey &&
       current.retry_window_open === 1
     ) {
+      addTrace(c, 'grant_retry', 'Accepted the same idempotency key within the 60-second retry window.');
       return respondWithUrl();
     }
-    return c.json({ error: 'Demo grant already used.' }, 403);
+    addTrace(c, 'grant_denied', 'Denied because the grant was already used or the retry window closed.');
+    return deny('Demo grant already used.', 403);
   });
 
   app.get('/api/file', async (c) => {

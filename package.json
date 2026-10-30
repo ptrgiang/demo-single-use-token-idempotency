@@ -10,10 +10,11 @@
   "scripts": {
     "dev": "wrangler dev --local --ip 127.0.0.1 --port 8799",
     "db:migrate": "wrangler d1 migrations apply demo-grants --local",
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && node scripts/check-client-syntax.mjs",
     "test": "vitest run",
     "test:network": "node scripts/network-smoke.mjs",
-    "evidence": "node scripts/record-evidence.mjs"
+    "evidence": "node scripts/record-evidence.mjs",
+    "test:mini": "node scripts/mini-smoke.mjs"
   },
   "dependencies": {
     "hono": "4.13.14"
