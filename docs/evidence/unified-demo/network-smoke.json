@@ -1,0 +1,35 @@
+{
+  "recordedAt": "2026-10-30T10:05:27.494Z",
+  "scenario": "loopback HTTP proxy drops response after Worker commits D1 grant",
+  "environment": "Wrangler local Worker/D1/R2; no cloud credentials or deployment",
+  "before": {
+    "used_at": null,
+    "idempotency_key": null,
+    "policy_version": 1,
+    "expires_at": "2026-10-31 10:05:27"
+  },
+  "upstreamStatus": 200,
+  "committedBeforeDrop": {
+    "used_at": "2026-10-30 10:05:27",
+    "idempotency_key": "f463ae88-4278-49f2-8e7a-bfbd68e3d45e",
+    "policy_version": 1,
+    "expires_at": "2026-10-31 10:05:27"
+  },
+  "clientSawNetworkFailure": true,
+  "retryStatus": 200,
+  "after": {
+    "used_at": "2026-10-30 10:05:27",
+    "idempotency_key": "f463ae88-4278-49f2-8e7a-bfbd68e3d45e",
+    "policy_version": 1,
+    "expires_at": "2026-10-31 10:05:27"
+  },
+  "usedAtUnchanged": true,
+  "differentKeyStatus": 403,
+  "fileStatus": 200,
+  "fixtureBytesMatch": true,
+  "fileSha256": "1530da84d93fcd354ac7d740149711d02963644dd13621c4d6e7d4e5ece9172c",
+  "limits": [
+    "Controlled proxy disconnect, not an uncontrolled real-world outage",
+    "No provider SigV4/ACL or production performance proof"
+  ]
+}

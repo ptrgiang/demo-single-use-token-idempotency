@@ -1,0 +1,37 @@
+{
+  "testedSource": "b28b1c1ef98f3bcacacd2d8667ab06668bc85e95",
+  "images": [
+    {
+      "path": "images/comparison.png",
+      "sha256": "671b8265740f9e399212b630071ece2300f17920a08a0e1b1bddf5eed801391b"
+    },
+    {
+      "path": "images/header-comparison.png",
+      "sha256": "cd8f8ee18130ff70d364b92c513a657374de8686864f1a108aa415ada5e54769"
+    },
+    {
+      "path": "images/project1-desktop.png",
+      "sha256": "6aacb0a02ce0249a322c38b3d4844016ff58ad6d97ae8d896c5563793ca26bab"
+    },
+    {
+      "path": "images/project2-375.png",
+      "sha256": "fd36f8a6969f038b513373b6f8059f9baed11e911c7b09a87a8a1f4bbcc2263d"
+    },
+    {
+      "path": "images/project2-390.png",
+      "sha256": "4b281672020b7b7a1e593ef16d87c70bdf78ca996baadecdb2d52138f7eb87f6"
+    },
+    {
+      "path": "images/project2-desktop.png",
+      "sha256": "f7032edddb47557abdbf11f899229fd5ad18a54bb7e5bd8ce5d0a425628a50f3"
+    },
+    {
+      "path": "images/project2-unified.png",
+      "sha256": "bdeb9caa1380aa505d341bf0971e10f75c0ca1404582f7fa827bc10f77439b35"
+    },
+    {
+      "path": "images/static-backend-help.png",
+      "sha256": "1348906bac22a428e10c72f0fb95accc65045878a1f8d9ea74148879b5e01e3b"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "recordedAt": "2026-10-30T10:05:45.918Z",
+  "testedCommit": "b28b1c1ef98f3bcacacd2d8667ab06668bc85e95",
+  "cleanWorktree": true,
+  "repository": "https://github.com/ptrgiang/demo-single-use-token-idempotency",
+  "node": "v24.14.1",
+  "platform": "win32",
+  "checks": {
+    "typecheck": "passed",
+    "testsPassed": 31,
+    "testsTotal": 31,
+    "testsFailed": 0,
+    "networkResponseLoss": "passed",
+    "miniWebHttp": "passed"
+  },
+  "artifacts": [
+    {
+      "path": "vitest.json",
+      "sha256": "75b1c36460a75ac4bc3b2eb8d512abfc8cd15c27fb2370512e0ac5594d5ecade"
+    },
+    {
+      "path": "network-smoke.json",
+      "sha256": "928e605cc2df61fd02b95bcde788e1a5248e05d1104de3c9c26a8413e74ffce5"
+    },
+    {
+      "path": "mini-smoke.json",
+      "sha256": "dd07a1ccccc0fd7028b79aa363f088e86d8f56fc10252a9eec92c7613ea216f2"
+    },
+    {
+      "path": "source-manifest.json",
+      "sha256": "4b017b5d4aea4a5ace146527ef9f1d097fe35e5f1e0d4285180803ed3fbca96c"
+    }
+  ],
+  "scope": "Standalone public demo only; separate from the private Project 2 regression suite"
+}
