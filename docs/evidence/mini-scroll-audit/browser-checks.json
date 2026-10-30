@@ -22,8 +22,9 @@
   "shortHeight": {
     "width": 900,
     "height": 500,
-    "documentHeight": 679,
-    "documentScrollEnabled": true
+    "documentHeight": 691,
+    "documentScrollEnabled": true,
+    "note": "Final renewal-menu state; viewport-only capture (full-page capture rejected after visual inspection). Tab reaches the source link at document scrollY191."
   },
   "checks": [
     "paid 67-byte receipt with matching SHA256",
@@ -82,7 +83,7 @@
     },
     {
       "path": "images/10-short-height.png",
-      "sha256": "34eddb486248939b9b68cdfb7aac443984bdd6fb9ac5b936f653cc5763a9f655"
+      "sha256": "659193febb58e0142ab1218bc59ec7600ca64e1c2063586c0c3c4f847242bb14"
     },
     {
       "path": "images/11-final-desktop.png",
