@@ -1,0 +1,51 @@
+{
+  "testedCommit": "5284bc55b3d23c34126a1311643333d2327fff17",
+  "method": "Manual browser checks on local Wrangler; not automated DOM tests",
+  "observations": [
+    "Paid and free each received 67 bytes with matching SHA256",
+    "Same UUID retry returned 200 and preserved first-use time/key; different UUID returned 403 with unchanged D1",
+    "Five scenario menu choices retain buyer context and do not execute on selection",
+    "Terminal defaults collapsed; Enter toggles; all four views show expected content",
+    "Byte receipt completed with terminal hidden; opening revealed accumulated actual trace",
+    "100 responses: one200 and99x403; winner matched D1",
+    "After race then fresh session: selecting race gave hidden=true and zero grid cells",
+    "Session restored on reload",
+    "390x844 viewport: document clientWidth=scrollWidth=375; horizontal scrolling confined to scenario menu; override reset",
+    "Final warning/error console empty"
+  ],
+  "screenshots": [
+    {
+      "path": "images/orders-new.png",
+      "sha256": "75497e02430363306d5861012a1d2433d8e302cb00448d3a198fe178b4c17505"
+    },
+    {
+      "path": "images/landing-new.png",
+      "sha256": "6762555c9a0a777983c59c6cfd53ca45abb030722e2489cdd0298ffb6b99d0c1"
+    },
+    {
+      "path": "images/terminal-new.png",
+      "sha256": "b0b154dc4b9e9e2b28f8b4a4d31951413dc123b954fe292e812df9f8498419a1"
+    },
+    {
+      "path": "images/mobile-new.png",
+      "sha256": "0cc0a10619d0513af80e6d14b5d73d3928c703000a53ad5b89ad61cb1b2284a1"
+    },
+    {
+      "path": "images/comparison-new.png",
+      "sha256": "f52bc39407ffd7822fced89c0336a9f4fa8d4f23f1affe9bb7c4aa30db65628d"
+    },
+    {
+      "path": "images/header-comparison-new.png",
+      "sha256": "cd656371f8fd36aa2adb85c6fef861a7b6acff269b3c218ce804d32ea813056c"
+    },
+    {
+      "path": "images/site-reference.png",
+      "sha256": "52f01b984a262319baf0d53634695bef69b32b56be9fa0377eba79acad1b354b"
+    }
+  ],
+  "limitations": [
+    "Source homepage capture is only a public shell reference, different content/auth state from mini buyer orders",
+    "Terminal race screenshot precedes typography-only adjustment; terminal contents/styles unchanged",
+    "OS-level save completion and remote provider deployment not asserted"
+  ]
+}

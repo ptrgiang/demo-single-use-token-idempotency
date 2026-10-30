@@ -1,0 +1,123 @@
+{
+  "scenario": "Mini web real loopback HTTP buyer/download/renew and backend trace",
+  "checks": [
+    {
+      "name": "Worker ready",
+      "passed": true
+    },
+    {
+      "name": "Real mini page served",
+      "passed": true
+    },
+    {
+      "name": "Create isolated paid/free session",
+      "passed": true
+    },
+    {
+      "name": "Independent second session",
+      "passed": true
+    },
+    {
+      "name": "Page and state read do not consume token",
+      "passed": true
+    },
+    {
+      "name": "Other session cannot renew order",
+      "passed": true
+    },
+    {
+      "name": "Unused link is reused",
+      "passed": true
+    },
+    {
+      "name": "Paid grant succeeds with server trace",
+      "passed": true
+    },
+    {
+      "name": "D1 stores original key",
+      "passed": true
+    },
+    {
+      "name": "Retry preserves original D1 timestamp",
+      "passed": true
+    },
+    {
+      "name": "Other UUID denied",
+      "passed": true
+    },
+    {
+      "name": "Actual fixture bytes and SHA256 match",
+      "passed": true
+    },
+    {
+      "name": "Free order uses same actual grant flow",
+      "passed": true
+    },
+    {
+      "name": "Actual fixture bytes and SHA256 match",
+      "passed": true
+    },
+    {
+      "name": "Consumed link can be renewed by owning session",
+      "passed": true
+    },
+    {
+      "name": "100 competing keys produce exactly one winner",
+      "passed": true
+    },
+    {
+      "name": "Second session remains intact",
+      "passed": true
+    }
+  ],
+  "paidFile": {
+    "status": 200,
+    "bytes": 67,
+    "sha256": "1530da84d93fcd354ac7d740149711d02963644dd13621c4d6e7d4e5ece9172c"
+  },
+  "freeFile": {
+    "status": 200,
+    "bytes": 67,
+    "sha256": "1530da84d93fcd354ac7d740149711d02963644dd13621c4d6e7d4e5ece9172c"
+  },
+  "race": {
+    "total": 100,
+    "granted": 1,
+    "denied": 99,
+    "winnerMatchesD1": true
+  },
+  "requestTrace": {
+    "requestId": "7a379c86-9b43-4c50-b9f6-ce94a007db80",
+    "stages": [
+      {
+        "stage": "request",
+        "detail": "Grant request reached the download handler."
+      },
+      {
+        "stage": "token_validation",
+        "detail": "Token format is valid."
+      },
+      {
+        "stage": "grant_lookup",
+        "detail": "Found an unexpired token for an eligible order."
+      },
+      {
+        "stage": "idempotency_validation",
+        "detail": "Accepted exactly one valid UUIDv4 key."
+      },
+      {
+        "stage": "file_preflight",
+        "detail": "The referenced R2 object exists."
+      },
+      {
+        "stage": "signed_file_url",
+        "detail": "Created a short-lived demo HMAC-SHA-256 file URL."
+      },
+      {
+        "stage": "grant_update",
+        "detail": "The conditional update accepted a first grant or a same-key retry; compare before and after state to tell which."
+      }
+    ]
+  },
+  "scope": "Synthetic sessions and files; no remote provider deployment or payment proof"
+}
