@@ -1,0 +1,46 @@
+{
+  "testedCommit": "90e55282efe4876211c1369526140b728fb90f53",
+  "method": "Manual browser interactions against local Wrangler; separate from CI and HTTP smoke",
+  "target": "http://127.0.0.1:8799/mini",
+  "observations": [
+    "Reload restored the same session and two orders",
+    "Opening a fresh download showed NULL used_at and idempotency_key",
+    "Retry and other-key controls were disabled before the first grant",
+    "Paid and free paths each received 67 fixture bytes with matching SHA-256",
+    "Same-key retry returned 200 with unchanged D1 key and first-use time",
+    "Another UUID returned 403, original D1 key unchanged, previous file result cleared",
+    "Renewal after use returned a new unused token for the same order",
+    "100 competing keys returned one 200 and 99 403; winner matched D1",
+    "Retry following the race used the winning UUID and received matching fixture bytes",
+    "390x844 override: clientWidth and scrollWidth both 375 CSS pixels; inspector stacked; override reset",
+    "Final browser error/warning log empty"
+  ],
+  "fixtureSha256": "1530da84d93fcd354ac7d740149711d02963644dd13621c4d6e7d4e5ece9172c",
+  "screenshots": [
+    {
+      "path": "images/backend.png",
+      "sha256": "d76bf5efe20e12be2c5e48bfc815c9209c8c194cd126ee422b663b96c324937c"
+    },
+    {
+      "path": "images/landing.png",
+      "sha256": "ef2a38073c1131b79d2cf35edf8ccf6eb20efa265b1f284290c64a25f51126b5"
+    },
+    {
+      "path": "images/mobile.png",
+      "sha256": "b4f56b1b73e4a957aea26a418002637675b1464bcaccf4e83b6d3f1df5087698"
+    },
+    {
+      "path": "images/orders.png",
+      "sha256": "ba9a6b3b65a1aa906adbc66e1751af91c40070aca5c950526b9f64413941aad6"
+    },
+    {
+      "path": "images/race.png",
+      "sha256": "72c9a9d871d4223f9d2121b21c6bfb0db098c21e234d1336fdbe728693c2f11b"
+    }
+  ],
+  "limits": [
+    "No OS-level save completion assertion",
+    "No cloud deployment",
+    "Session restore transport-failure fix statically reviewed; no injected browser network outage"
+  ]
+}

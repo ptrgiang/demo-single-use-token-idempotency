@@ -152,3 +152,7 @@ Xem [bản đồ mã nguồn và kiểm chứng](docs/traceability.md) để đ�
 ## Lần xác minh được lưu
 
 Ngày 30/10/2026, commit [`96b6875`](https://github.com/ptrgiang/demo-single-use-token-idempotency/tree/96b687505e6f6f1d03a941d0b5d79f65d9eeafb2), trước luồng mini và cấu hình remote, được chạy trên trạng thái sạch: kiểm tra kiểu đạt, **18/18 ca** đạt và thử nghiệm mất phản hồi qua proxy đạt. [Bộ bằng chứng](docs/evidence/README.md) lưu kết quả gốc cùng trạng thái D1 trước/sau và SHA-256. Đây là lần chạy demo độc lập, không phải kết quả kiểm thử của các thay đổi mini hiện tại.
+
+## Kết quả mini web công khai
+
+Commit [`90e5528`](https://github.com/ptrgiang/demo-single-use-token-idempotency/tree/90e55282efe4876211c1369526140b728fb90f53) có **29/29 ca**, **17 kiểm tra HTTP mini**, và phép thử mất phản hồi qua proxy đạt trên [GitHub Actions](https://github.com/ptrgiang/demo-single-use-token-idempotency/actions/runs/41005384537). [Bộ bằng chứng mini web](docs/evidence/mini-web/) lưu artifact CI nguyên gốc cùng quan sát trình duyệt riêng. Các con số này thay thế số 18 ca lịch sử khi đánh giá bản mini; chúng không đại diện bộ hồi quy ứng dụng riêng tư.
