@@ -1,36 +1,38 @@
-# Mini website: scroll remediation QA
+# Unified Project 1 / Project 2 demo QA
 
-Scope: buyer order → download → scenario menu → backend terminal. Existing The Builder visual language retained; layout intentionally changed to support simultaneous action and observation. See [audit](docs/ux-scroll-audit.md).
+Scope: one shared demo website; state-preserving switch between the existing Project1 simulator and Project2 buyer/backend UI. Root defaults to Project1 per user; /mini aliases open Project2. The underlying simulator and grant/session policies are retained.
 
-## Visual truth and captures
+## Visual target and comparison
 
-Current-run source screenshots: `docs/evidence/mini-scroll-audit/images/01-start.png` through `05-terminal.png`. Rendered implementation: http://127.0.0.1:8799/mini, final desktop `11-final-desktop.png`, mobile `09-mobile-fixed.png`, race `08-race-fixed.png` in the same directory.
+Existing visual target: the compact The Builder mini, captured in `docs/evidence/mini-scroll-audit/images/11-final-desktop.png` (1280×720). This is the retained UI target, not a new audit of that historical capture. Implementation: http://127.0.0.1:8799/, `docs/evidence/unified-demo/images/project2-unified.png` (1280×720). Both CSS and image dimensions1280×720, deviceScaleFactor1; no density scaling or stretching. Full-view comparison `comparison.png` (2560×760 with40px caption) and focused native header comparison `header-comparison.png` (1280×200) were opened together and inspected.
 
-Desktop CSS viewport 1280×720. Old capture pixels 1265×712 (native scrollbar/capture boundary); final 1280×720. Both are native screenshot pixels; comparison uses no stretching, no density scaling, and pads the old image. This is a layout before/after comparison, not a pixel-identical design target. Old download is ready; final download has received bytes and shows success. Scenario selection also differs. These differences are not fidelity defects.
+Intended differences: global header now has two persistent project tabs instead of links between separate pages; active scenario04 versus01 and trace/session values differ. Both download captures show actual successful67byte receipt. The buyer header/card and bottom terminal retain their visual language. Project1 standalone header/tab bar hidden only when embedded; its existing six-scenario UI remains. `project1-desktop.png` verifies the initial Project1 state. Mobile captures390×844 and375×844 verify the shared header and native scenario select. Manual Huashu Chrome capture `project2-desktop.png` was1534×911; it is separate observational evidence, not used for pixel comparisons.
 
-Full-view comparison: `images/comparison.png` (2560×764). Focused card comparison: `images/focused-comparison.png` (1400×510), native crops with gray padding; the entire card and CTA remain visible. Both were opened together and inspected. Mobile CSS viewport/capture 390×844; further 375×844 width check had clientWidth=scrollWidth=375. Short-height check 900×500 enabled document scrolling.
+## Findings and iterations
 
-## Findings and comparison history
+- [P2, resolved] Same-origin iframe404 may emit load without error; validate the child marker before dismissing recovery UI. Retry now changes the child reload query to force a fresh navigation. Forced404 → visible retry → successful recovery verified in headless Chromium.
+- [P3, resolved] Standalone child navigation used root-relative URLs; replaced with relative index/lab links. Parent resolves child/direct/core links from its own directory, including /mini/ aliases. A static /preview/ subpath test verified child URLs and backend setup help.
+- [P2, resolved] Keyboard/iframe scrolling could move the shared chrome outside the viewport during an intermediate capture. Fixed outer body to the viewport; root scrollY0/header y0 verified after download. Final capture re-taken after the reveal animation settled.
+- [P2, resolved] Skip-navigation anchor could change project through hash routing; intercept it to focus main without changing hash. Keyboard skip keeps Project2 active; ArrowLeft/End change tabs and focus as expected.
 
-1. [P1, resolved] Before: expanded download + terminal document height 1362 px; at scrollY642 the download CTA was above the viewport. After: bounded flex workspace, compact card, terminal reserves its own bottom space. Final document height720 at viewport720; download CTA, scenario action and terminal simultaneously visible. Full comparison above verifies this intentional composition change.
-2. [P2, resolved] Scenario menu and execution button were separated by the website. Instructions/action now sit directly under desktop menu or next to mobile select, including unmet prerequisites. Verified menu selection preserves the current order and does not run tests.
-3. [P2, resolved] Intermediate compact terminal tabs had a stray vertical scrollbar; constrained overflow-y and re-captured `07-download-fixed.png`. Status after a successful grant was too generic; final summary reports HTTP200,67bytes and checksum match. Ordinary traces follow actual new lines only when already near the bottom. Final desktop/mobile captures verify the revised presentation.
-4. [P3, accepted] Race traces do not auto-follow while the result grid is shown. This deliberately keeps1/99 counts and all100 cells visible; users can scroll down to the actual trace. Static reviewer suggested removing that condition, but that would push the result grid out of the compact pane. No backend event is discarded.
+No actionable P0/P1/P2 remains for this integration. Previous compact-layout audit remains in `docs/ux-scroll-audit.md`; historical evidence folders are preserved.
 
-## Required fidelity surfaces
+## Fidelity surfaces
 
-- Typography: Space Grotesk and fallback retained; brand/headings retain strong source weights. Download title/CTA readable in focused native-pixel comparison. Mobile heading wraps without horizontal overflow. Terminal uses monospace and wraps long details.
-- Spacing/layout: compact64px desktop header, two-column download card,220px scenario rail, bottom terminal in flex flow. No overlay on buyer controls. Mobile uses stacked content and native select. Long content scrolls internally; <=560px height uses document scrolling for access at short heights/zoom.
-- Colors/tokens: source warm white, yellow, green, black3px borders and hard shadows retained. Dark terminal remains distinct; success feedback is visible next to the action. This was a visual review, not an instrumented contrast certification.
-- Image quality/assets: no new image asset, SVG substitute or generated art. Existing native letter marks and synthetic product fallback retained. No creator artwork or records copied.
-- Copy/content: duplicate announcement/footer removed from demo flow. Demo account/lab identity remains. Preconditions explain disabled actions. HTTP/byte/checksum summaries originate from completed actual requests; no simulated backend logs or timings added.
+- Fonts/typography: shared utility bar uses system UI; existing buyer Space Grotesk and strong headings remain inside its surface. Project1 keeps its own existing font. Intentional distinction between demo controls and buyer website; native header comparison confirms readable project labels/subtitles.
+- Spacing/layout:60px desktop and88px mobile shared header; one active full-height project region. Project2 retains adjacent scenario controls and compact open terminal. Content scrolls within the active interface, while the switch stays available. Project1 panels permit internal scrolling in embedded mode.
+- Colors/tokens: dark neutral utility bar, yellow active project underline, existing buyer warm white/yellow/green/black borders unchanged. Focus outline visible. No instrumented contrast certification asserted.
+- Assets: no new imagery or generated art; original simulator icons and buyer letter-mark/product fallback retained. No creator records or artwork copied.
+- Copy/content: explicit “Mô phỏng cơ chế” versus “Website & backend thật”; existing simulation scope warning retained. Static hosting explains the required backend and links saved evidence; it does not invent grant results or call localhost. Direct core lab is a secondary separate tool.
 
-## Verification and limits
+## Interaction and proof
 
-Browser manual checks: paid67byte download/checksum; same-key retry200; different-key403; renewal and new download;100UUID race1x200/99x403 with D1 winner; desktop/mobile menu selection preserves order; terminal toggle Enter and aria-expanded false/true; D1/R2, JSON/requestId and setup views; focusable terminal region and End scroll to2808px in2958px content;390px and375px mobile widths;900×500 fallback; final console error/warning list empty. OS save completion not asserted. No screen-reader/full WCAG or cross-browser certification.
+Manual Huashu Chrome: started Project1 simulated download, switched to Project2, then observed identical Project1 token and performance.timeOrigin with accumulated logs. Created real Project2 session, opened paid order, began grant, switched away/back: same frame timeOrigin, selected download screen and HTTP200/67byte/SHA success remained. Root navigation count1. This proves switching retains mounted interfaces, not persistence across a full page reload.
 
-Automated evidence is recorded separately with exact tested source SHA after a clean source commit. Manual observations do not increase automated counts. Backend, Project1 index.html, marketplace production and report PDFs unchanged.
+Focused headless Chromium checks: state snapshot unchanged across switch; arrows/Home/End, skip focus, Back/Forward; /mini/ correctly resolves children and selects Project2;390/375px root and child scrollWidth equal viewport width; terminal open; forced iframe404/retry; static/subpath backend help; pageerror list empty. See `browser-qa.json`. Browser observations are separate from Vitest/HTTP counts. Full screen-reader/WCAG, OS save and cross-browser certification not asserted.
 
-Implementation checklist: compact layout, adjacent scenario controls, open compact terminal, mobile select, keyboard scroll, real-state summaries and before/after comparison completed. No actionable P0/P1/P2 remains in this scoped review.
+The original Project1 simulator script is byte-identical to the pre-integration source (SHA2564876e28a6cb2538cd2e8c7301002a22d4d4550b391f64114d590729871d6a0f2). Server edits only change HTML serving routes/imports. APIs, schema, auth and grant policies unchanged. Production and report PDFs untouched.
+
+Checklist: shared root/switch; preserved state; responsive nav; direct aliases and subpaths; keyboard/history; truthful unavailable-backend help; recovery; inspected final comparisons completed. Automated clean-source evidence is published with its exact tested revision separately.
 
 final result: passed

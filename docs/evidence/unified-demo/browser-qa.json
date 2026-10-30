@@ -1,0 +1,45 @@
+{
+  "tool": "Playwright headless Chromium (focused layout/navigation verification); Huashu Chrome manual state-switch check separately",
+  "desktop": {
+    "width": 1280,
+    "height": 720
+  },
+  "statePreserved": true,
+  "sizes": [
+    {
+      "root": {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390,
+        "scrollHeight": 844
+      },
+      "child": {
+        "width": 390,
+        "scrollWidth": 390,
+        "terminalOpen": "true"
+      }
+    },
+    {
+      "root": {
+        "width": 375,
+        "height": 844,
+        "scrollWidth": 375,
+        "scrollHeight": 844
+      },
+      "child": {
+        "width": 375,
+        "scrollWidth": 375,
+        "terminalOpen": "true"
+      }
+    }
+  ],
+  "keyboardSwitch": true,
+  "skipLinkPreservesProject": true,
+  "miniTrailingSlashAlias": true,
+  "staticBackendHelp": true,
+  "pageErrors": [],
+  "historyBackForward": true,
+  "iframe404Recovery": true,
+  "subpathStaticHelp": true,
+  "headerDoesNotScrollAway": true
+}

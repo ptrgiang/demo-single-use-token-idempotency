@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import labPage from '../index.html';
+import labPage from '../lab.html';
+import demoPage from '../index.html';
 import { FIXTURE_KEY, FIXTURE_TEXT, MISSING_FIXTURE_KEY, TOKENS } from './fixtures';
 import { registerMiniRoutes } from './mini';
 import type { AppEnv, Env } from './types';
@@ -186,16 +187,14 @@ export function createApp(options: { now?: () => number } = {}): Hono<AppEnv> {
     await next();
   });
 
-  app.get('/', (c) => c.text(
-    'Single-use token demo\n\n' +
-    'The visual simulation is in the repository root index.html.\n' +
-    'Reset fixtures with POST /api/demo/reset.\n' +
-    'Inspect a token with GET /api/demo/state/<32-hex-token>.\n' +
-    'Redeem with GET /api/download/<token>?idem=<UUIDv4>.\n',
-  ));
+  app.get('/', (c) => c.html(demoPage));
+  app.get('/index.html', (c) => c.html(demoPage));
+  app.get('/mini', (c) => c.html(demoPage));
+  app.get('/mini/', (c) => c.html(demoPage));
 
   app.get('/lab', (c) => c.html(labPage));
   app.get('/lab/', (c) => c.html(labPage));
+  app.get('/lab.html', (c) => c.html(labPage));
 
   registerMiniRoutes(app, now);
 

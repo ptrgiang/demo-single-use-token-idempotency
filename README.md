@@ -16,7 +16,11 @@ npm run db:migrate
 npm run dev
 ```
 
-Mở **http://127.0.0.1:8799/mini**. Chọn **Bắt đầu phiên demo**, rồi tải một trong hai đơn mẫu. Website giữ header, font, màu và thẻ đơn hàng theo The Builder. Menu kịch bản nằm bên trái; điện thoại dùng danh sách chọn. Terminal mặc định mở gọn ở đáy, có thể mở/ẩn bằng **Hiện terminal / Ẩn terminal**.
+Mở **http://127.0.0.1:8799/**. Website mặc định mở **Project 1 · Mô phỏng cơ chế**; chuyển sang **Project 2 · Website & backend thật** ngay trên thanh chung phía trên. Hai project giữ trạng thái khi đổi tab: kịch bản, log mô phỏng, đơn/token đang xem, kết quả tải và terminal. Chỉ tải giao diện mỗi project ở lần mở đầu; đổi tab không tải lại trang. Có thể dùng phím mũi tên, Home/End hoặc gửi link `/#project1` / `/#project2`.
+
+Trong Project 2, chọn **Bắt đầu phiên demo**, rồi tải một trong hai đơn mẫu. Website giữ header, font, màu và thẻ đơn hàng theo The Builder. Menu kịch bản nằm bên trái; điện thoại dùng danh sách chọn. Terminal mặc định mở gọn ở đáy, có thể mở/ẩn bằng **Hiện terminal / Ẩn terminal**. URL cũ `/mini` mở cùng website, chọn sẵn Project 2.
+
+Khi chỉ host các file tĩnh (chẳng hạn GitHub Pages), Project 1 vẫn mô phỏng trực tiếp; Project 2 hiện hướng dẫn chạy backend và liên kết bằng chứng đã lưu. Để thao tác tải/renew/kiểm thử thật trong cùng website, chạy Worker local như trên hoặc tự triển khai theo hướng dẫn. Trang tĩnh không gọi localhost hay API production.
 
 - **Đơn hàng của tôi:** phiên riêng có đơn trả phí 49.000 đồng và đơn miễn phí; đều dùng trạng thái paid tổng hợp.
 - **Trang tải:** chỉ bấm nút mới cấp quyền. UUID gắn với token được giữ trong sessionStorage để retry dưới 60 giây. Tệp nhận bằng fetch để kiểm tra checksum trước khi người dùng chọn lưu.
@@ -48,13 +52,14 @@ Hai script HTTP tự khởi động Worker với trạng thái tạm ở cổng 
 
 ## Các vùng demo
 
-- `/mini`: mini web Project 2 và inspector, có thể chạy local hoặc tự triển khai.
+- `/`: website demo chung; `#project1` là mặc định, `#project2` mở web người mua và terminal. `/mini` và `/mini/` là link tương thích mở Project 2 trong cùng khung.
+- `/mini.html`: giao diện Project 2 độc lập; `/lab.html` là giao diện mô phỏng/lab độc lập. Khung chung giữ cả hai giao diện khi chuyển tab, ẩn thanh điều hướng lặp bên trong.
 - `/lab#project1`: giữ nguyên sáu mô phỏng lịch sử Project 1; không phải backend thật, một số hành vi như prefetch khác chính sách mới.
 - `/lab#project2`: bộ sáu kịch bản lõi, chạy thật trên local hoặc đọc bằng chứng 18 ca đã lưu. Chế độ trang tĩnh không gọi localhost hay API sản phẩm.
 
 ## Giao diện kiểm thử Project 2
 
-Sau `npm ci`, chạy `npm run db:migrate` và `npm run dev`, rồi mở **http://127.0.0.1:8799/lab**. Worker phục vụ chính `index.html`, vì vậy mọi yêu cầu thử nghiệm cùng origin với API local. Chọn Project 2, một trong sáu kịch bản và **Chạy kịch bản đã chọn**.
+Sau `npm ci`, chạy `npm run db:migrate` và `npm run dev`, rồi mở **http://127.0.0.1:8799/lab** (hoặc **Kiểm thử cốt lõi** trên thanh demo chung). Worker phục vụ `lab.html`, vì vậy mọi yêu cầu thử nghiệm cùng origin với API local. Chọn Project 2, một trong sáu kịch bản và **Chạy kịch bản đã chọn**.
 
 Mặc định **Thực hiện từng bước** được bật: trang khởi tạo dữ liệu mẫu, đọc D1 rồi chờ bạn gửi yêu cầu cấp quyền, retry, đổi khóa hoặc nhận tệp. Diễn biến chỉ ghi nhận hành động/phản hồi đã xảy ra. Có thể dừng ở bước chờ hoặc bỏ chọn để chạy tự động. Retry dùng đồng hồ thật; hãy thực hiện trước khi cửa sổ dưới 60 giây đóng. Các mốc chính xác 59/60/61 giây vẫn thuộc bộ kiểm thử với đồng hồ kiểm soát.
 

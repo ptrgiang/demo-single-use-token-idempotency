@@ -26,7 +26,7 @@ try{
  let ready=false;const deadline=Date.now()+45000;
  while(Date.now()<deadline){if(worker.exitCode!==null)throw Error(output);try{const r=await fetch(origin+'/api/mini/config');if(r.ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,200));}
  check('Worker ready',ready);
- const page=await fetch(origin+'/mini');check('Real mini page served',page.ok&&(await page.text()).includes('id="terminal-toggle"'));
+ const page=await fetch(origin+'/mini.html');check('Real mini page served',page.ok&&(await page.text()).includes('id="terminal-toggle"'));
  const a=await request('/api/mini/session',null,'POST');check('Create isolated paid/free session',a.status===201&&a.body.orders.length===2);
  const b=await request('/api/mini/session',null,'POST');check('Independent second session',b.status===201&&b.body.session!==a.body.session);
  const paid=a.body.orders.find(o=>o.price>0),free=a.body.orders.find(o=>o.price===0);assert.ok(paid&&free);

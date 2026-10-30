@@ -3,7 +3,7 @@
 | Thành phần | Vai trò | Giới hạn |
 | --- | --- | --- |
 | `src/index.ts` | Handler HTTP cho grant, URL HMAC, request ID/trace, remote gate và fixture cũ | Mô hình demo; không có tài khoản người mua |
-| `src/mini.ts` | Trang `/mini`, config, phiên mua hàng tổng hợp, đọc đơn, renew và đọc trạng thái token | Capability phiên demo; không đại diện đăng nhập hoặc giao dịch thật |
+| `src/mini.ts` | Trang `/mini.html`, config, phiên mua hàng tổng hợp, đọc đơn, renew và đọc trạng thái token | Capability phiên demo; không đại diện đăng nhập hoặc giao dịch thật |
 | `src/fixtures.ts` | Token cố định cho kịch bản lõi và nội dung tệp tổng hợp | Token mini được sinh ngẫu nhiên; không dùng dữ liệu sản phẩm thật |
 | `migrations/0001_legacy.sql` | Lược đồ demo tối thiểu trước chính sách dùng một lần | Không phải lược đồ toàn bộ ứng dụng |
 | `migrations/0002_single_use.sql` | Thêm trạng thái tiêu thụ, khóa idempotency và phiên bản chính sách | Không chuẩn hóa định dạng thời gian legacy |
@@ -12,8 +12,9 @@
 | `scripts/network-smoke.mjs` | Ngắt phản hồi qua proxy sau khi D1 đã ghi rồi retry | Loopback có kiểm soát, không phải sự cố cloud thật |
 | `scripts/mini-smoke.mjs` | HTTP loopback cho phiên, sở hữu đơn, tải file, renew và cạnh tranh grant | Không gọi deployment hoặc provider thật |
 | `scripts/record-evidence.mjs` | Gắn kết quả test, smoke và SHA-256 với commit sạch | Chỉ chứng nhận lần chạy tại commit đó |
-| `index.html` | Project 1 mô phỏng và Project 2 lab lõi; link hướng dẫn mini luôn trỏ về README công khai | Lab chỉ gửi API tại loopback; bằng chứng nhúng là lần chạy cũ |
-| `mini.html` | Giao diện người mua tổng hợp và inspector trace trên `/mini` | Dùng API cùng origin; không phải giao diện của marketplace thật |
+| `index.html` | Website demo chung với hai tab Project 1/Project 2; giữ hai giao diện cùng trạng thái, đổi bằng hash hoặc bàn phím | Chỉ tải mỗi giao diện lần đầu; không trộn log mô phỏng với log backend |
+| `lab.html` | Sáu mô phỏng Project 1 và Project 2 lab lõi trước đây ở index.html | Script mô phỏng Project 1 giữ nguyên; lab chỉ gửi API tại loopback; bằng chứng nhúng là lần chạy cũ |
+| `mini.html` | Giao diện người mua tổng hợp và terminal trace, được mở trong tab Project 2 hoặc trực tiếp `/mini.html` | Dùng API cùng origin; trang tĩnh hiện hướng dẫn backend, không tự gọi localhost |
 | `docs/deploy.md`, `wrangler.deploy.example.toml` | Cấu hình remote tùy chọn và hướng dẫn deploy Worker/D1/R2 riêng | Không chứa resource ID hoặc secret thật |
 | `docs/evidence/2026-10-30/` | Bằng chứng lịch sử của commit `96b6875` | **18 ca trước mini và remote**; không phải kết quả của mã hiện tại |
 

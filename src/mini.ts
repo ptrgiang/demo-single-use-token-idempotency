@@ -112,8 +112,7 @@ async function loadReusableGrant(
 }
 
 export function registerMiniRoutes(app: Hono<AppEnv>, now: () => number): void {
-  app.get('/mini', (c) => c.html(miniPage));
-  app.get('/mini/', (c) => c.html(miniPage));
+  app.get('/mini.html', (c) => c.html(miniPage));
 
   app.get('/api/mini/config', (c) => {
     const remote = c.env.DEMO_REMOTE === 'true';
