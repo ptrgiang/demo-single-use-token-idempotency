@@ -1,0 +1,19 @@
+name = "single-use-idempotency-local-demo"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = false
+preview_urls = false
+
+[vars]
+# Public fixture key for local tests, never a production credential.
+DEMO_SIGNING_KEY = "public-demo-fixture-key-not-for-real-files"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "demo-grants"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "single-use-demo-fixtures"

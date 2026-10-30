@@ -1,0 +1,28 @@
+{
+  "name": "demo-single-use-token-idempotency",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reproducible local Worker/D1 example of atomic single-use grants and bounded same-key retry",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "wrangler dev --local --ip 127.0.0.1 --port 8799",
+    "db:migrate": "wrangler d1 migrations apply demo-grants --local",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:network": "node scripts/network-smoke.mjs",
+    "evidence": "node scripts/record-evidence.mjs"
+  },
+  "dependencies": {
+    "hono": "4.13.14"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.4.11",
+    "@cloudflare/workers-types": "5.20261030.1",
+    "typescript": "5.8.3",
+    "vitest": "4.1.12",
+    "wrangler": "4.156.0"
+  }
+}
