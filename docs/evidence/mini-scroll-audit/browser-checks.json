@@ -1,0 +1,100 @@
+{
+  "testedCommit": "14eaf05430b42407464281c72108e1ac69cc8940",
+  "method": "Manual CUA browser observation; separate from automated tests",
+  "url": "http://127.0.0.1:8799/mini",
+  "desktop": {
+    "width": 1280,
+    "height": 720,
+    "documentHeightBeforeExpanded": 1362,
+    "documentHeightAfter": 720,
+    "simultaneousBuyerScenarioTerminal": true
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "documentHeight": 844,
+    "documentWidth": 390,
+    "buyerClientHeight": 384,
+    "buyerScrollHeight": 434,
+    "additionalWidthChecked": 375,
+    "horizontalOverflow": false
+  },
+  "shortHeight": {
+    "width": 900,
+    "height": 500,
+    "documentHeight": 679,
+    "documentScrollEnabled": true
+  },
+  "checks": [
+    "paid 67-byte receipt with matching SHA256",
+    "same-key 200 retry; D1 key and timestamp preserved",
+    "different-key 403",
+    "renew then download",
+    "100 UUID requests: 1 grant / 99 denied; D1 winner matches",
+    "menu change retains order and sends no test request",
+    "terminal defaults open; Enter toggle with aria-expanded false/true",
+    "D1/R2, JSON requestId, setup panels",
+    "named focusable terminal: End scrolls to 2808 of 2958px content with150px client height",
+    "no final console error/warning entries"
+  ],
+  "limits": [
+    "Manual observations are not automated DOM tests",
+    "No OS save completion assertion",
+    "No full WCAG/screen-reader/cross-browser certification",
+    "Local Windows run; no cloud deployment"
+  ],
+  "images": [
+    {
+      "path": "images/01-start.png",
+      "sha256": "d6e1e10037cf448f4b38af877192945203b924f563b297cfa74925e73c73f741"
+    },
+    {
+      "path": "images/02-orders.png",
+      "sha256": "1e97127d9076bf5e866d1bf645d58529cf4a70cfdf45b10dd8a43e2786f84112"
+    },
+    {
+      "path": "images/03-download.png",
+      "sha256": "b2ec7b6c8b8776b20be7e2cef3f6cc7a4c78c1b783dae76c6f298ea30a7a08dd"
+    },
+    {
+      "path": "images/04-scenario.png",
+      "sha256": "912a9b7d2047eb0c6e10bae37f32e298e13e190220238b98a4b42af773ff5567"
+    },
+    {
+      "path": "images/05-terminal.png",
+      "sha256": "2d90f31ddbc798728c5eda4ee2f51d8597203320a9f65f1ab122d589ccce379c"
+    },
+    {
+      "path": "images/06-orders-fixed.png",
+      "sha256": "ce78fe3818dec9d827b00483e3eb8e706b48b979abb02db85d7693f299c851a9"
+    },
+    {
+      "path": "images/07-download-fixed.png",
+      "sha256": "d09ad7ec48d42eec92c68612e8fcfd7194b394133973089b9be7636bfe7536a9"
+    },
+    {
+      "path": "images/08-race-fixed.png",
+      "sha256": "0c02307fb97f8750352bfbb46dd65e95f530ffca2110515990bda202b9973015"
+    },
+    {
+      "path": "images/09-mobile-fixed.png",
+      "sha256": "ed3b39ffb9d9f73a30b167daa27cbb279bbd782cbe34b3b84e817ab787e57b06"
+    },
+    {
+      "path": "images/10-short-height.png",
+      "sha256": "34eddb486248939b9b68cdfb7aac443984bdd6fb9ac5b936f653cc5763a9f655"
+    },
+    {
+      "path": "images/11-final-desktop.png",
+      "sha256": "836e84ea310581eaa564daaa6678f485e265ac0bee937be649396d05c413bae7"
+    },
+    {
+      "path": "images/comparison.png",
+      "sha256": "263f6c3c755be64eec5097987ffb215bbd01eeec355fd73e2bb870c7cb2d4468"
+    },
+    {
+      "path": "images/focused-comparison.png",
+      "sha256": "e731566aa81417c5ea1795267eb76b00937e97946577f91d28b125d03ba00ebb"
+    }
+  ]
+}
