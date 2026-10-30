@@ -1,6 +1,6 @@
 node_modules/
 .wrangler/
-evidence/
+/evidence/
 .dev.vars
 .env
 .env.*
