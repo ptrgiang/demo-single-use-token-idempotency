@@ -94,3 +94,7 @@ Tác giả: **Phạm Trường Giang**. Tên: *Demo single-use token và idempot
 Khi trích dẫn, dùng permalink `https://github.com/ptrgiang/demo-single-use-token-idempotency/tree/<full-commit-sha>` thay cho nhánh có thể thay đổi. Ghi rõ đây là demo độc lập, commit đã kiểm thử và thời điểm thu bằng chứng; không dùng kết quả demo để thay thế bộ hồi quy ứng dụng riêng tư.
 
 Xem [bản đồ mã nguồn và kiểm chứng](docs/traceability.md) để đối chiếu phạm vi.
+
+## Lần xác minh được lưu
+
+Ngày 30/10/2026, commit [`96b6875`](https://github.com/ptrgiang/demo-single-use-token-idempotency/tree/96b687505e6f6f1d03a941d0b5d79f65d9eeafb2) được chạy trên trạng thái sạch: kiểm tra kiểu đạt, **18/18 ca** đạt và thử nghiệm mất phản hồi qua proxy đạt. [Bộ bằng chứng](docs/evidence/README.md) lưu kết quả gốc cùng trạng thái D1 trước/sau và SHA-256. Đây là lần chạy demo độc lập.
